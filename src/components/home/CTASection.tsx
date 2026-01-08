@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
 const CTASection = () => {
+  const { t } = useTranslation();
+
   return (
     <section className="py-20 bg-hero-gradient relative overflow-hidden">
       {/* Decorative elements */}
@@ -12,24 +15,22 @@ const CTASection = () => {
       <div className="container relative z-10">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="font-heading text-3xl md:text-4xl lg:text-5xl font-bold text-primary-foreground mb-6">
-            Ready to Join Our{" "}
-            <span className="text-gradient">Community?</span>
+            {t("cta.title")}{" "}
+            <span className="text-gradient">{t("cta.titleHighlight")}</span>
           </h2>
           <p className="text-lg text-primary-foreground/80 mb-8 max-w-2xl mx-auto">
-            Take the first step towards an exceptional education. Contact us today
-            to learn about admissions, schedule a campus tour, or get answers to
-            your questions.
+            {t("cta.description")}
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link to="/contact">
               <Button variant="hero" size="xl">
-                Contact Us
+                {t("common.contactUs")}
                 <ArrowRight className="h-5 w-5" />
               </Button>
             </Link>
             <Link to="/about">
               <Button variant="hero-outline" size="xl">
-                Learn More
+                {t("common.learnMore")}
               </Button>
             </Link>
           </div>

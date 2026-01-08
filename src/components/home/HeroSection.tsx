@@ -1,9 +1,19 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, BookOpen, Users, Trophy, Clock } from "lucide-react";
 import heroImage from "@/assets/hero-school.jpg";
 
 const HeroSection = () => {
+  const { t } = useTranslation();
+
+  const stats = [
+    { icon: Users, value: "1,200+", label: t("hero.stats.students") },
+    { icon: BookOpen, value: "50+", label: t("hero.stats.courses") },
+    { icon: Trophy, value: "95%", label: t("hero.stats.successRate") },
+    { icon: Clock, value: "30+", label: t("hero.stats.yearsExcellence") },
+  ];
+
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden">
       {/* Background Image */}
@@ -27,26 +37,24 @@ const HeroSection = () => {
           </div>
 
           <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-primary-foreground leading-tight">
-            Shaping Minds,{" "}
-            <span className="text-gradient">Building Futures</span>
+            {t("hero.title")}{" "}
+            <span className="text-gradient">{t("hero.titleHighlight")}</span>
           </h1>
 
           <p className="text-lg text-primary-foreground/80 leading-relaxed max-w-xl">
-            At Boulough Al-Maram High School, we combine academic excellence with
-            strong moral values to nurture tomorrow's leaders. Join our community
-            of learners and achievers.
+            {t("hero.description")}
           </p>
 
           <div className="flex flex-wrap gap-4 pt-4">
             <Link to="/about">
               <Button variant="hero" size="xl">
-                Explore Our School
+                {t("hero.exploreButton")}
                 <ArrowRight className="h-5 w-5" />
               </Button>
             </Link>
             <Link to="/student-login">
               <Button variant="hero-outline" size="xl">
-                Student Portal
+                {t("common.studentPortal")}
               </Button>
             </Link>
           </div>
@@ -54,12 +62,7 @@ const HeroSection = () => {
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16 animate-fade-in animation-delay-300">
-          {[
-            { icon: Users, value: "1,200+", label: "Students" },
-            { icon: BookOpen, value: "50+", label: "Courses" },
-            { icon: Trophy, value: "95%", label: "Success Rate" },
-            { icon: Clock, value: "30+", label: "Years of Excellence" },
-          ].map((stat, i) => (
+          {stats.map((stat, i) => (
             <div
               key={i}
               className="flex items-center gap-3 p-4 rounded-xl bg-primary-foreground/10 backdrop-blur-sm border border-primary-foreground/10"

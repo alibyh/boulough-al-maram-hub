@@ -1,54 +1,56 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Users, Award, Globe, Microscope, Palette } from "lucide-react";
 
-const features = [
-  {
-    icon: BookOpen,
-    title: "Academic Excellence",
-    description: "Comprehensive curriculum aligned with international standards for holistic education.",
-  },
-  {
-    icon: Users,
-    title: "Experienced Faculty",
-    description: "Dedicated teachers with years of experience in nurturing young minds.",
-  },
-  {
-    icon: Award,
-    title: "Character Building",
-    description: "Strong emphasis on moral values, ethics, and personal development.",
-  },
-  {
-    icon: Globe,
-    title: "Modern Facilities",
-    description: "State-of-the-art classrooms, labs, and recreational spaces for students.",
-  },
-  {
-    icon: Microscope,
-    title: "Science & Research",
-    description: "Well-equipped laboratories for hands-on learning in sciences.",
-  },
-  {
-    icon: Palette,
-    title: "Arts & Culture",
-    description: "Rich programs in arts, music, and cultural activities.",
-  },
-];
-
 const FeaturesSection = () => {
+  const { t } = useTranslation();
+
+  const features = [
+    {
+      icon: BookOpen,
+      title: t("features.academicExcellence.title"),
+      description: t("features.academicExcellence.description"),
+    },
+    {
+      icon: Users,
+      title: t("features.experiencedFaculty.title"),
+      description: t("features.experiencedFaculty.description"),
+    },
+    {
+      icon: Award,
+      title: t("features.characterBuilding.title"),
+      description: t("features.characterBuilding.description"),
+    },
+    {
+      icon: Globe,
+      title: t("features.modernFacilities.title"),
+      description: t("features.modernFacilities.description"),
+    },
+    {
+      icon: Microscope,
+      title: t("features.scienceResearch.title"),
+      description: t("features.scienceResearch.description"),
+    },
+    {
+      icon: Palette,
+      title: t("features.artsCulture.title"),
+      description: t("features.artsCulture.description"),
+    },
+  ];
+
   return (
     <section className="py-20">
       <div className="container">
         <div className="text-center max-w-2xl mx-auto mb-16">
           <span className="text-sm font-semibold text-gold uppercase tracking-wider">
-            Why Choose Us
+            {t("features.subtitle")}
           </span>
           <h2 className="font-heading text-3xl md:text-4xl font-bold text-foreground mt-2 mb-4">
-            Excellence in Every Aspect
+            {t("features.title")}
           </h2>
           <p className="text-muted-foreground">
-            We provide a nurturing environment where students thrive academically,
-            socially, and personally.
+            {t("features.description")}
           </p>
         </div>
 
@@ -75,7 +77,7 @@ const FeaturesSection = () => {
         <div className="text-center mt-12">
           <Link to="/about">
             <Button variant="default" size="lg">
-              Learn More About Us
+              {t("features.learnMoreButton")}
             </Button>
           </Link>
         </div>

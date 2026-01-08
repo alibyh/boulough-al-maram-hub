@@ -1,0 +1,147 @@
+{
+  "common": {
+    "home": "Home",
+    "about": "About",
+    "news": "News",
+    "timetable": "Timetable",
+    "contact": "Contact",
+    "studentPortal": "Student Portal",
+    "learnMore": "Learn More",
+    "contactUs": "Contact Us",
+    "readMore": "Read More",
+    "backToNews": "Back to News",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "Error",
+    "notFound": "Not Found",
+    "returnHome": "Return to Home"
+  },
+  "header": {
+    "schoolName": "Boulough Al-Maram",
+    "schoolType": "High School"
+  },
+  "hero": {
+    "title": "Building Tomorrow's",
+    "titleHighlight": "Leaders Today",
+    "description": "Welcome to Boulough Al-Maram High School, where we nurture minds, build character, and inspire excellence in every student.",
+    "exploreButton": "Explore Our School",
+    "stats": {
+      "students": "Students",
+      "courses": "Courses",
+      "successRate": "Success Rate",
+      "yearsExcellence": "Years of Excellence"
+    }
+  },
+  "features": {
+    "subtitle": "Why Choose Us",
+    "title": "Excellence in Every Aspect",
+    "description": "We provide a nurturing environment where students thrive academically, socially, and personally.",
+    "academicExcellence": {
+      "title": "Academic Excellence",
+      "description": "Comprehensive curriculum aligned with international standards for holistic education."
+    },
+    "experiencedFaculty": {
+      "title": "Experienced Faculty",
+      "description": "Dedicated teachers with years of experience in nurturing young minds."
+    },
+    "characterBuilding": {
+      "title": "Character Building",
+      "description": "Strong emphasis on moral values, ethics, and personal development."
+    },
+    "modernFacilities": {
+      "title": "Modern Facilities",
+      "description": "State-of-the-art classrooms, labs, and recreational spaces for students."
+    },
+    "scienceResearch": {
+      "title": "Science & Research",
+      "description": "Well-equipped laboratories for hands-on learning in sciences."
+    },
+    "artsCulture": {
+      "title": "Arts & Culture",
+      "description": "Rich programs in arts, music, and cultural activities."
+    },
+    "learnMoreButton": "Learn More About Us"
+  },
+  "newsSection": {
+    "subtitle": "Stay Updated",
+    "title": "Latest News & Events",
+    "description": "Keep up with the latest happenings, achievements, and announcements from our school community.",
+    "viewAll": "View All News",
+    "noNews": "No news articles available at the moment.",
+    "checkBackLater": "Check back later for updates!"
+  },
+  "cta": {
+    "title": "Ready to Join Our",
+    "titleHighlight": "Community?",
+    "description": "Take the first step towards an exceptional education. Contact us today to learn about admissions, schedule a campus tour, or get answers to your questions."
+  },
+  "footer": {
+    "description": "Empowering students with knowledge, values, and skills to become tomorrow's leaders.",
+    "quickLinks": "Quick Links",
+    "contactInfo": "Contact Info",
+    "socialHours": "Social & Hours",
+    "schoolHours": "School Hours",
+    "weekdays": "Mon - Fri: 7:30 AM - 3:00 PM",
+    "saturday": "Sat: 8:00 AM - 12:00 PM",
+    "followUs": "Follow Us",
+    "allRightsReserved": "All rights reserved."
+  },
+  "notFoundPage": {
+    "title": "404",
+    "message": "Oops! Page not found"
+  },
+  "newsPage": {
+    "title": "School News",
+    "description": "Stay updated with the latest news, events, and announcements from our school community.",
+    "searchPlaceholder": "Search news...",
+    "noResults": "No news articles found",
+    "tryDifferent": "Try a different search term or check back later for updates."
+  },
+  "contactPage": {
+    "title": "Contact Us",
+    "description": "Get in touch with us. We'd love to hear from you and answer any questions you may have.",
+    "address": "Address",
+    "phone": "Phone",
+    "email": "Email",
+    "hours": "Hours",
+    "sendMessage": "Send us a Message",
+    "formName": "Your Name",
+    "formEmail": "Your Email",
+    "formSubject": "Subject",
+    "formMessage": "Your Message",
+    "formSubmit": "Send Message",
+    "messageSent": "Message Sent!",
+    "messageSuccess": "Thank you for contacting us. We'll get back to you soon.",
+    "findUs": "Find Us"
+  },
+  "aboutPage": {
+    "title": "About Us",
+    "subtitle": "Our Story",
+    "historyTitle": "Our History",
+    "historyDescription": "Founded with a vision to provide exceptional education, Boulough Al-Maram High School has been shaping young minds for over two decades. We believe in nurturing not just academic excellence, but also character, creativity, and leadership skills.",
+    "mission": "Mission",
+    "missionText": "To provide quality education that develops critical thinking, creativity, and character in every student.",
+    "vision": "Vision",
+    "visionText": "To be a leading institution that prepares students to become responsible global citizens and future leaders.",
+    "values": "Values",
+    "valuesText": "Integrity, Excellence, Respect, Innovation, and Community are the pillars that guide everything we do.",
+    "whatWeOffer": "What We Offer",
+    "academicPrograms": "Academic Programs",
+    "academicProgramsDesc": "Comprehensive curriculum covering sciences, humanities, languages, and arts with qualified teachers.",
+    "extracurricular": "Extracurricular Activities",
+    "extracurricularDesc": "Sports, arts, clubs, and community service opportunities for holistic development.",
+    "supportServices": "Support Services",
+    "supportServicesDesc": "Counseling, tutoring, and career guidance to support every student's journey."
+  },
+  "timetablePage": {
+    "title": "Class Timetable",
+    "description": "View the weekly class schedule for all grade levels. Classes run from Sunday to Thursday.",
+    "selectGrade": "Select your grade level to view the timetable",
+    "time": "Time",
+    "sunday": "Sunday",
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday"
+  }
+}
