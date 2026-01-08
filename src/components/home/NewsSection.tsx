@@ -1,33 +1,17 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, ArrowRight } from "lucide-react";
-
-const newsItems = [
-  {
-    id: 1,
-    title: "Annual Science Fair Winners Announced",
-    excerpt: "Congratulations to our students who excelled in the regional science fair competition...",
-    date: "December 28, 2025",
-    category: "Achievement",
-  },
-  {
-    id: 2,
-    title: "New Library Wing Opening Ceremony",
-    excerpt: "We are excited to announce the opening of our new state-of-the-art library facility...",
-    date: "December 20, 2025",
-    category: "Campus",
-  },
-  {
-    id: 3,
-    title: "Winter Break Schedule",
-    excerpt: "Important information about the upcoming winter break and return dates for students...",
-    date: "December 15, 2025",
-    category: "Announcement",
-  },
-];
+import { Calendar, ArrowRight, ImageIcon } from "lucide-react";
+import { useNewsList } from "@/hooks/useNews";
+import { format } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const NewsSection = () => {
+  const { data: news, isLoading, error } = useNewsList();
+  
+  // Only show the 3 most recent news items
+  const displayNews = news?.slice(0, 3) || [];
+
   return (
     <section className="py-20 bg-muted/30">
       <div className="container">
@@ -48,33 +32,77 @@ const NewsSection = () => {
           </Link>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {newsItems.map((item, index) => (
-            <Card
-              key={item.id}
-              className="group overflow-hidden border-border/50 hover:border-gold/50 transition-all duration-300 hover:shadow-elegant animate-fade-in"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <CardContent className="p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="px-3 py-1 text-xs font-semibold rounded-full bg-accent text-accent-foreground">
-                    {item.category}
-                  </span>
-                </div>
-                <h3 className="font-heading text-xl font-semibold text-foreground mb-3 group-hover:text-primary transition-colors">
-                  {item.title}
-                </h3>
-                <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
-                  {item.excerpt}
-                </p>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Calendar className="h-4 w-4" />
-                  {item.date}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {/* Loading State */}
+        {isLoading && (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="overflow-hidden">
+                <Skeleton className="h-48 w-full" />
+                <CardContent className="p-6">
+                  <Skeleton className="h-6 w-full mb-3" />
+                  <Skeleton className="h-4 w-full mb-2" />
+                  <Skeleton className="h-4 w-3/4 mb-4" />
+                  <Skeleton className="h-4 w-32" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Unable to load news at this time.</p>
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!isLoading && !error && displayNews.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No news articles available yet.</p>
+          </div>
+        )}
+
+        {/* News Grid */}
+        {!isLoading && !error && displayNews.length > 0 && (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {displayNews.map((item, index) => (
+              <Link to={`/news/${item.id}`} key={item.id}>
+                <Card
+                  className="group overflow-hidden border-border/50 hover:border-gold/50 transition-all duration-300 hover:shadow-elegant animate-fade-in h-full"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  {/* Main Photo */}
+                  <div className="relative h-48 bg-muted overflow-hidden">
+                    {item.main_photo ? (
+                      <img
+                        src={item.main_photo}
+                        alt={item.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ImageIcon className="h-12 w-12 text-muted-foreground/50" />
+                      </div>
+                    )}
+                  </div>
+                  <CardContent className="p-6">
+                    <h3 className="font-heading text-xl font-semibold text-foreground mb-3 group-hover:text-primary transition-colors line-clamp-2">
+                      {item.title}
+                    </h3>
+                    <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
+                      {item.description}
+                    </p>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Calendar className="h-4 w-4" />
+                      {format(new Date(item.date), "MMMM d, yyyy")}
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
