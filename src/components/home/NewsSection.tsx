@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, ArrowRight, ImageIcon } from "lucide-react";
@@ -7,6 +8,7 @@ import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const NewsSection = () => {
+  const { t } = useTranslation();
   const { data: news, isLoading, error } = useNewsList();
   
   // Only show the 3 most recent news items
@@ -18,15 +20,15 @@ const NewsSection = () => {
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-12">
           <div>
             <span className="text-sm font-semibold text-gold uppercase tracking-wider">
-              Stay Updated
+              {t("newsSection.subtitle")}
             </span>
             <h2 className="font-heading text-3xl md:text-4xl font-bold text-foreground mt-2">
-              Latest News & Events
+              {t("newsSection.title")}
             </h2>
           </div>
           <Link to="/news">
             <Button variant="outline" className="group">
-              View All News
+              {t("newsSection.viewAll")}
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Button>
           </Link>
@@ -52,14 +54,14 @@ const NewsSection = () => {
         {/* Error State */}
         {error && (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">Unable to load news at this time.</p>
+            <p className="text-muted-foreground">{t("common.error")}</p>
           </div>
         )}
 
         {/* Empty State */}
         {!isLoading && !error && displayNews.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">No news articles available yet.</p>
+            <p className="text-muted-foreground">{t("newsSection.noNews")}</p>
           </div>
         )}
 

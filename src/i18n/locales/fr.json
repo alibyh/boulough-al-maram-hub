@@ -1,0 +1,147 @@
+{
+  "common": {
+    "home": "Accueil",
+    "about": "À Propos",
+    "news": "Actualités",
+    "timetable": "Emploi du Temps",
+    "contact": "Contact",
+    "studentPortal": "Portail Étudiant",
+    "learnMore": "En Savoir Plus",
+    "contactUs": "Contactez-Nous",
+    "readMore": "Lire Plus",
+    "backToNews": "Retour aux Actualités",
+    "search": "Rechercher",
+    "loading": "Chargement...",
+    "error": "Erreur",
+    "notFound": "Non Trouvé",
+    "returnHome": "Retour à l'Accueil"
+  },
+  "header": {
+    "schoolName": "Boulough Al-Maram",
+    "schoolType": "Lycée"
+  },
+  "hero": {
+    "title": "Former les Leaders de",
+    "titleHighlight": "Demain Aujourd'hui",
+    "description": "Bienvenue au Lycée Boulough Al-Maram, où nous cultivons les esprits, forgeons le caractère et inspirons l'excellence chez chaque élève.",
+    "exploreButton": "Découvrir Notre École",
+    "stats": {
+      "students": "Élèves",
+      "courses": "Cours",
+      "successRate": "Taux de Réussite",
+      "yearsExcellence": "Années d'Excellence"
+    }
+  },
+  "features": {
+    "subtitle": "Pourquoi Nous Choisir",
+    "title": "L'Excellence dans Tous les Domaines",
+    "description": "Nous offrons un environnement bienveillant où les élèves s'épanouissent académiquement, socialement et personnellement.",
+    "academicExcellence": {
+      "title": "Excellence Académique",
+      "description": "Programme complet aligné sur les standards internationaux pour une éducation holistique."
+    },
+    "experiencedFaculty": {
+      "title": "Corps Enseignant Expérimenté",
+      "description": "Enseignants dévoués avec des années d'expérience dans l'accompagnement des jeunes esprits."
+    },
+    "characterBuilding": {
+      "title": "Développement du Caractère",
+      "description": "Accent fort sur les valeurs morales, l'éthique et le développement personnel."
+    },
+    "modernFacilities": {
+      "title": "Installations Modernes",
+      "description": "Salles de classe, laboratoires et espaces récréatifs à la pointe pour les élèves."
+    },
+    "scienceResearch": {
+      "title": "Sciences & Recherche",
+      "description": "Laboratoires bien équipés pour l'apprentissage pratique des sciences."
+    },
+    "artsCulture": {
+      "title": "Arts & Culture",
+      "description": "Programmes riches en arts, musique et activités culturelles."
+    },
+    "learnMoreButton": "En Savoir Plus Sur Nous"
+  },
+  "newsSection": {
+    "subtitle": "Restez Informé",
+    "title": "Dernières Actualités & Événements",
+    "description": "Suivez les derniers événements, réalisations et annonces de notre communauté scolaire.",
+    "viewAll": "Voir Toutes les Actualités",
+    "noNews": "Aucune actualité disponible pour le moment.",
+    "checkBackLater": "Revenez plus tard pour les mises à jour!"
+  },
+  "cta": {
+    "title": "Prêt à Rejoindre Notre",
+    "titleHighlight": "Communauté?",
+    "description": "Faites le premier pas vers une éducation exceptionnelle. Contactez-nous aujourd'hui pour en savoir plus sur les admissions, planifier une visite du campus ou obtenir des réponses à vos questions."
+  },
+  "footer": {
+    "description": "Former les élèves avec les connaissances, les valeurs et les compétences pour devenir les leaders de demain.",
+    "quickLinks": "Liens Rapides",
+    "contactInfo": "Coordonnées",
+    "socialHours": "Horaires & Réseaux",
+    "schoolHours": "Horaires de l'École",
+    "weekdays": "Lun - Ven: 7h30 - 15h00",
+    "saturday": "Sam: 8h00 - 12h00",
+    "followUs": "Suivez-Nous",
+    "allRightsReserved": "Tous droits réservés."
+  },
+  "notFoundPage": {
+    "title": "404",
+    "message": "Oups! Page non trouvée"
+  },
+  "newsPage": {
+    "title": "Actualités de l'École",
+    "description": "Restez informé des dernières actualités, événements et annonces de notre communauté scolaire.",
+    "searchPlaceholder": "Rechercher...",
+    "noResults": "Aucune actualité trouvée",
+    "tryDifferent": "Essayez un autre terme de recherche ou revenez plus tard pour les mises à jour."
+  },
+  "contactPage": {
+    "title": "Contactez-Nous",
+    "description": "Prenez contact avec nous. Nous serions ravis de vous entendre et de répondre à vos questions.",
+    "address": "Adresse",
+    "phone": "Téléphone",
+    "email": "Email",
+    "hours": "Horaires",
+    "sendMessage": "Envoyez-Nous un Message",
+    "formName": "Votre Nom",
+    "formEmail": "Votre Email",
+    "formSubject": "Sujet",
+    "formMessage": "Votre Message",
+    "formSubmit": "Envoyer",
+    "messageSent": "Message Envoyé!",
+    "messageSuccess": "Merci de nous avoir contactés. Nous vous répondrons bientôt.",
+    "findUs": "Nous Trouver"
+  },
+  "aboutPage": {
+    "title": "À Propos",
+    "subtitle": "Notre Histoire",
+    "historyTitle": "Notre Histoire",
+    "historyDescription": "Fondé avec la vision de fournir une éducation exceptionnelle, le Lycée Boulough Al-Maram forme les jeunes esprits depuis plus de deux décennies. Nous croyons en la cultivation non seulement de l'excellence académique, mais aussi du caractère, de la créativité et des compétences en leadership.",
+    "mission": "Mission",
+    "missionText": "Fournir une éducation de qualité qui développe la pensée critique, la créativité et le caractère chez chaque élève.",
+    "vision": "Vision",
+    "visionText": "Être une institution de premier plan qui prépare les élèves à devenir des citoyens du monde responsables et les leaders de demain.",
+    "values": "Valeurs",
+    "valuesText": "L'intégrité, l'excellence, le respect, l'innovation et la communauté sont les piliers qui guident tout ce que nous faisons.",
+    "whatWeOffer": "Ce Que Nous Offrons",
+    "academicPrograms": "Programmes Académiques",
+    "academicProgramsDesc": "Programme complet couvrant les sciences, les humanités, les langues et les arts avec des enseignants qualifiés.",
+    "extracurricular": "Activités Extrascolaires",
+    "extracurricularDesc": "Sports, arts, clubs et opportunités de service communautaire pour un développement holistique.",
+    "supportServices": "Services de Soutien",
+    "supportServicesDesc": "Conseil, tutorat et orientation professionnelle pour accompagner le parcours de chaque élève."
+  },
+  "timetablePage": {
+    "title": "Emploi du Temps",
+    "description": "Consultez le programme hebdomadaire pour tous les niveaux. Les cours ont lieu du dimanche au jeudi.",
+    "selectGrade": "Sélectionnez votre niveau pour voir l'emploi du temps",
+    "time": "Heure",
+    "sunday": "Dimanche",
+    "monday": "Lundi",
+    "tuesday": "Mardi",
+    "wednesday": "Mercredi",
+    "thursday": "Jeudi"
+  }
+}

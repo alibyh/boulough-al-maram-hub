@@ -1,7 +1,17 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { GraduationCap, Mail, Phone, MapPin, Facebook, Twitter, Instagram } from "lucide-react";
 
 const Footer = () => {
+  const { t } = useTranslation();
+
+  const quickLinks = [
+    { name: t("common.about"), path: "/about" },
+    { name: t("common.news"), path: "/news" },
+    { name: t("common.timetable"), path: "/timetable" },
+    { name: t("common.studentPortal"), path: "/student-login" },
+  ];
+
   return (
     <footer className="bg-primary text-primary-foreground">
       <div className="container py-12 md:py-16">
@@ -13,24 +23,19 @@ const Footer = () => {
                 <GraduationCap className="h-6 w-6" />
               </div>
               <span className="font-heading text-xl font-bold">
-                Boulough Al-Maram
+                {t("header.schoolName")}
               </span>
             </Link>
             <p className="text-primary-foreground/80 text-sm leading-relaxed">
-              Empowering students with knowledge and values since 1995. Building tomorrow's leaders through excellence in education.
+              {t("footer.description")}
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-heading text-lg font-semibold mb-4">Quick Links</h4>
+            <h4 className="font-heading text-lg font-semibold mb-4">{t("footer.quickLinks")}</h4>
             <ul className="space-y-2">
-              {[
-                { name: "About Us", path: "/about" },
-                { name: "News & Events", path: "/news" },
-                { name: "Timetable", path: "/timetable" },
-                { name: "Student Portal", path: "/student-login" },
-              ].map((link) => (
+              {quickLinks.map((link) => (
                 <li key={link.path}>
                   <Link
                     to={link.path}
@@ -45,7 +50,7 @@ const Footer = () => {
 
           {/* Contact Info */}
           <div>
-            <h4 className="font-heading text-lg font-semibold mb-4">Contact Us</h4>
+            <h4 className="font-heading text-lg font-semibold mb-4">{t("footer.contactInfo")}</h4>
             <ul className="space-y-3">
               <li className="flex items-start gap-3 text-sm">
                 <MapPin className="h-4 w-4 mt-0.5 text-gold shrink-0" />
@@ -66,12 +71,12 @@ const Footer = () => {
 
           {/* Social & Hours */}
           <div>
-            <h4 className="font-heading text-lg font-semibold mb-4">School Hours</h4>
+            <h4 className="font-heading text-lg font-semibold mb-4">{t("footer.schoolHours")}</h4>
             <div className="space-y-2 text-sm text-primary-foreground/80 mb-6">
-              <p>Monday - Friday: 7:30 AM - 3:30 PM</p>
-              <p>Saturday: 8:00 AM - 12:00 PM</p>
-              <p>Sunday: Closed</p>
+              <p>{t("footer.weekdays")}</p>
+              <p>{t("footer.saturday")}</p>
             </div>
+            <p className="text-sm font-medium mb-3">{t("footer.followUs")}</p>
             <div className="flex gap-3">
               {[Facebook, Twitter, Instagram].map((Icon, i) => (
                 <a
@@ -87,7 +92,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-12 pt-8 border-t border-primary-foreground/10 text-center text-sm text-primary-foreground/60">
-          © {new Date().getFullYear()} Boulough Al-Maram High School. All rights reserved.
+          © {new Date().getFullYear()} {t("header.schoolName")}. {t("footer.allRightsReserved")}
         </div>
       </div>
     </footer>

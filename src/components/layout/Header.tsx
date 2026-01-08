@@ -1,19 +1,22 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Menu, X, GraduationCap } from "lucide-react";
-
-const navLinks = [
-  { name: "Home", path: "/" },
-  { name: "About", path: "/about" },
-  { name: "News", path: "/news" },
-  { name: "Timetable", path: "/timetable" },
-  { name: "Contact", path: "/contact" },
-];
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const { t } = useTranslation();
+
+  const navLinks = [
+    { name: t("common.home"), path: "/" },
+    { name: t("common.about"), path: "/about" },
+    { name: t("common.news"), path: "/news" },
+    { name: t("common.timetable"), path: "/timetable" },
+    { name: t("common.contact"), path: "/contact" },
+  ];
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -25,9 +28,9 @@ const Header = () => {
           </div>
           <div className="flex flex-col">
             <span className="font-heading text-lg font-bold text-foreground leading-tight">
-              Boulough Al-Maram
+              {t("header.schoolName")}
             </span>
-            <span className="text-xs text-muted-foreground">High School</span>
+            <span className="text-xs text-muted-foreground">{t("header.schoolType")}</span>
           </div>
         </Link>
 
@@ -45,24 +48,27 @@ const Header = () => {
           ))}
         </nav>
 
-        {/* Student Login Button */}
-        <div className="hidden md:flex items-center gap-3">
+        {/* Language Switcher & Student Login Button */}
+        <div className="hidden md:flex items-center gap-2">
+          <LanguageSwitcher />
           <Link to="/student-login">
             <Button variant="gold" size="default">
-              Student Portal
+              {t("common.studentPortal")}
             </Button>
           </Link>
         </div>
 
         {/* Mobile Menu Button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="md:hidden"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-        >
-          {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </Button>
+        <div className="flex md:hidden items-center gap-2">
+          <LanguageSwitcher />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+        </div>
       </div>
 
       {/* Mobile Navigation */}
@@ -85,7 +91,7 @@ const Header = () => {
             ))}
             <Link to="/student-login" onClick={() => setIsMenuOpen(false)}>
               <Button variant="gold" className="w-full mt-2">
-                Student Portal
+                {t("common.studentPortal")}
               </Button>
             </Link>
           </nav>
