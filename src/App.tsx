@@ -9,8 +9,11 @@ import News from "./pages/News";
 import NewsDetail from "./pages/NewsDetail";
 import Timetable from "./pages/Timetable";
 import Contact from "./pages/Contact";
-import StudentLogin from "./pages/StudentLogin";
+import Login from "./pages/Login";
 import StudentDashboard from "./pages/StudentDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
+import AdminNewsList from "./pages/AdminNewsList";
+import AdminNewsForm from "./pages/AdminNewsForm";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,8 +31,13 @@ const App = () => (
           <Route path="/news/:id" element={<NewsDetail />} />
           <Route path="/timetable" element={<Timetable />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/student-login" element={<StudentLogin />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/student-login" element={<Login />} />
           <Route path="/student-dashboard" element={<StudentDashboard />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/news" element={<AdminNewsList />} />
+          <Route path="/admin/news/new" element={<AdminNewsForm />} />
+          <Route path="/admin/news/edit/:id" element={<AdminNewsForm />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
