@@ -14,7 +14,65 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      news: {
+        Row: {
+          created_at: string
+          date: string
+          description: string
+          id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          description: string
+          id?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          description?: string
+          id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      news_photos: {
+        Row: {
+          created_at: string
+          id: string
+          is_main: boolean
+          news_id: string
+          photo_url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_main?: boolean
+          news_id: string
+          photo_url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_main?: boolean
+          news_id?: string
+          photo_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_photos_news_id_fkey"
+            columns: ["news_id"]
+            isOneToOne: false
+            referencedRelation: "news"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
