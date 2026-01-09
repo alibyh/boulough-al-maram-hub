@@ -243,6 +243,7 @@ export type Database = {
           id: string
           start_time: string
           subject_id: string
+          teacher_id: string | null
           updated_at: string
         }
         Insert: {
@@ -254,6 +255,7 @@ export type Database = {
           id?: string
           start_time: string
           subject_id: string
+          teacher_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -265,6 +267,7 @@ export type Database = {
           id?: string
           start_time?: string
           subject_id?: string
+          teacher_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -280,6 +283,13 @@ export type Database = {
             columns: ["subject_id"]
             isOneToOne: false
             referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timetable_slots_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
