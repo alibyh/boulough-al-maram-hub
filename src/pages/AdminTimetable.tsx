@@ -45,6 +45,13 @@ import {
 } from "@/hooks/useTimetable";
 import { toast } from "sonner";
 
+// Predefined time slots
+const PREDEFINED_SLOTS = [
+  { label: "08:00 - 10:00", start_time: "08:00", end_time: "10:00" },
+  { label: "10:00 - 12:00", start_time: "10:00", end_time: "12:00" },
+  { label: "12:00 - 14:00", start_time: "12:00", end_time: "14:00" },
+];
+
 const AdminTimetable = () => {
   const { user, profile, isLoading, isAdmin, signOut } = useAuth();
   const navigate = useNavigate();
@@ -59,9 +66,11 @@ const AdminTimetable = () => {
   const deleteSlot = useDeleteTimetableSlot();
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [useCustomTime, setUseCustomTime] = useState(false);
   const [newSlot, setNewSlot] = useState({
     subject_id: "",
     day_of_week: 0,
+    time_slot: "0", // index of predefined slot
     start_time: "",
     end_time: "",
   });
@@ -91,12 +100,16 @@ const AdminTimetable = () => {
   }
 
   const handleCreateSlot = async () => {
-    if (
-      !selectedClassId ||
-      !newSlot.subject_id ||
-      !newSlot.start_time ||
-      !newSlot.end_time
-    ) {
+    let startTime = newSlot.start_time;
+    let endTime = newSlot.end_time;
+
+    if (!useCustomTime) {
+      const selectedSlot = PREDEFINED_SLOTS[parseInt(newSlot.time_slot)];
+      startTime = selectedSlot.start_time;
+      endTime = selectedSlot.end_time;
+    }
+
+    if (!selectedClassId || !newSlot.subject_id || !startTime || !endTime) {
       toast.error("Please fill all fields");
       return;
     }
@@ -105,10 +118,11 @@ const AdminTimetable = () => {
         class_id: selectedClassId,
         subject_id: newSlot.subject_id,
         day_of_week: newSlot.day_of_week,
-        start_time: newSlot.start_time,
-        end_time: newSlot.end_time,
+        start_time: startTime,
+        end_time: endTime,
       });
-      setNewSlot({ subject_id: "", day_of_week: 0, start_time: "", end_time: "" });
+      setNewSlot({ subject_id: "", day_of_week: 0, time_slot: "0", start_time: "", end_time: "" });
+      setUseCustomTime(false);
       setDialogOpen(false);
       toast.success("Time slot added successfully");
     } catch (error) {
@@ -250,27 +264,58 @@ const AdminTimetable = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Start Time</Label>
-                      <Input
-                        type="time"
-                        value={newSlot.start_time}
-                        onChange={(e) =>
-                          setNewSlot({ ...newSlot, start_time: e.target.value })
+                  <div className="space-y-2">
+                    <Label>Time Slot</Label>
+                    {!useCustomTime ? (
+                      <Select
+                        value={newSlot.time_slot}
+                        onValueChange={(v) =>
+                          setNewSlot({ ...newSlot, time_slot: v })
                         }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>End Time</Label>
-                      <Input
-                        type="time"
-                        value={newSlot.end_time}
-                        onChange={(e) =>
-                          setNewSlot({ ...newSlot, end_time: e.target.value })
-                        }
-                      />
-                    </div>
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {PREDEFINED_SLOTS.map((slot, i) => (
+                            <SelectItem key={i} value={i.toString()}>
+                              {slot.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label>Start Time</Label>
+                          <Input
+                            type="time"
+                            value={newSlot.start_time}
+                            onChange={(e) =>
+                              setNewSlot({ ...newSlot, start_time: e.target.value })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>End Time</Label>
+                          <Input
+                            type="time"
+                            value={newSlot.end_time}
+                            onChange={(e) =>
+                              setNewSlot({ ...newSlot, end_time: e.target.value })
+                            }
+                          />
+                        </div>
+                      </div>
+                    )}
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="p-0 h-auto text-sm"
+                      onClick={() => setUseCustomTime(!useCustomTime)}
+                    >
+                      {useCustomTime ? "Use predefined slots" : "Add custom time"}
+                    </Button>
                   </div>
                   <Button
                     onClick={handleCreateSlot}
