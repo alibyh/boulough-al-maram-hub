@@ -193,33 +193,35 @@ const Timetable = () => {
                                 isOngoing ? "bg-primary/5" : ""
                               }`}
                             >
-                              <div className="flex items-start justify-between gap-4">
-                                <div className="flex-1 min-w-0">
-                                  <h4 className="font-medium text-foreground">
+                      <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1 min-w-0 space-y-1">
+                                  {/* Subject */}
+                                  <h4 className="font-semibold text-foreground text-base">
                                     {slot.subjects?.name || "Unknown Subject"}
                                   </h4>
-                                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-sm text-muted-foreground">
-                                    <span>
-                                      {formatTime(slot.start_time)} – {formatTime(slot.end_time)}
-                                    </span>
-                                    {slot.profiles?.full_name && (
-                                      <span className="flex items-center gap-1">
-                                        <User className="h-3 w-3" />
-                                        {slot.profiles.full_name}
-                                      </span>
-                                    )}
-                                    {slot.classroom && (
-                                      <span className="flex items-center gap-1">
-                                        <MapPin className="h-3 w-3" />
-                                        {slot.classroom}
-                                      </span>
-                                    )}
-                                  </div>
+                                  {/* Time - bigger */}
+                                  <p className="text-lg font-medium text-foreground">
+                                    {formatTime(slot.start_time)} – {formatTime(slot.end_time)}
+                                  </p>
+                                  {/* Teacher */}
+                                  {slot.profiles?.full_name && (
+                                    <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                                      <User className="h-3.5 w-3.5" />
+                                      {slot.profiles.full_name}
+                                    </p>
+                                  )}
+                                  {/* Classroom */}
+                                  {slot.classroom && (
+                                    <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                                      <MapPin className="h-3.5 w-3.5" />
+                                      {slot.classroom}
+                                    </p>
+                                  )}
                                 </div>
 
                                 {status && selectedDay === "today" && (
                                   <span
-                                    className={`text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap ${
+                                    className={`text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap self-start ${
                                       isOngoing
                                         ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                                         : isFinished
