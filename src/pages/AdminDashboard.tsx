@@ -6,10 +6,12 @@ import {
   GraduationCap,
   Newspaper,
   Users,
-  Settings,
   LogOut,
   Loader2,
   Plus,
+  BookOpen,
+  Calendar,
+  School,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNewsList } from "@/hooks/useNews";
@@ -78,8 +80,8 @@ const AdminDashboard = () => {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           {[
             { icon: Newspaper, label: "News Articles", value: news?.length || 0 },
-            { icon: Users, label: "Total Users", value: "-" },
-            { icon: Settings, label: "Settings", value: "-" },
+            { icon: School, label: "Classes", value: "-" },
+            { icon: BookOpen, label: "Subjects", value: "-" },
           ].map((stat, i) => (
             <Card key={i} className="border-border/50">
               <CardContent className="p-5">
@@ -132,24 +134,72 @@ const AdminDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="border-border/50 opacity-60">
+          <Card className="border-border/50 hover:border-gold/50 transition-colors">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent">
-                  <Users className="h-6 w-6 text-primary" />
+                  <School className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <CardTitle className="font-heading">User Management</CardTitle>
+                  <CardTitle className="font-heading">Classes</CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    Manage students and teachers
+                    Manage school classes
                   </p>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full" disabled>
-                Coming Soon
-              </Button>
+              <Link to="/admin/classes">
+                <Button variant="outline" className="w-full">
+                  Manage Classes
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/50 hover:border-gold/50 transition-colors">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent">
+                  <BookOpen className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="font-heading">Subjects</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Manage school subjects
+                  </p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Link to="/admin/subjects">
+                <Button variant="outline" className="w-full">
+                  Manage Subjects
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/50 hover:border-gold/50 transition-colors">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent">
+                  <Calendar className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <CardTitle className="font-heading">Timetable</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Configure class schedules
+                  </p>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Link to="/admin/timetable">
+                <Button variant="outline" className="w-full">
+                  Manage Timetable
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
@@ -157,12 +207,12 @@ const AdminDashboard = () => {
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent">
-                  <Settings className="h-6 w-6 text-primary" />
+                  <Users className="h-6 w-6 text-primary" />
                 </div>
                 <div>
-                  <CardTitle className="font-heading">Settings</CardTitle>
+                  <CardTitle className="font-heading">Users</CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    Configure site settings
+                    Manage students and teachers
                   </p>
                 </div>
               </div>

@@ -14,6 +14,9 @@ import StudentDashboard from "./pages/StudentDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminNewsList from "./pages/AdminNewsList";
 import AdminNewsForm from "./pages/AdminNewsForm";
+import AdminClasses from "./pages/AdminClasses";
+import AdminSubjects from "./pages/AdminSubjects";
+import AdminTimetable from "./pages/AdminTimetable";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +41,9 @@ const App = () => (
           <Route path="/admin/news" element={<AdminNewsList />} />
           <Route path="/admin/news/new" element={<AdminNewsForm />} />
           <Route path="/admin/news/edit/:id" element={<AdminNewsForm />} />
+          <Route path="/admin/classes" element={<AdminClasses />} />
+          <Route path="/admin/subjects" element={<AdminSubjects />} />
+          <Route path="/admin/timetable" element={<AdminTimetable />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
