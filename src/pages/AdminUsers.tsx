@@ -40,6 +40,9 @@ import {
   Plus,
   Upload,
   X,
+  Copy,
+  Check,
+  Key,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUsers, useUpdateProfile, useUpdateUserRole, UserWithRole } from "@/hooks/useUsers";
@@ -68,6 +71,14 @@ const AdminUsers = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [isCredentialsDialogOpen, setIsCredentialsDialogOpen] = useState(false);
+  const [createdCredentials, setCreatedCredentials] = useState<{
+    email: string;
+    password: string;
+    full_name: string;
+    role: string;
+  } | null>(null);
+  const [copiedField, setCopiedField] = useState<"email" | "password" | null>(null);
 
   // Create form state
   const [createForm, setCreateForm] = useState({
@@ -75,6 +86,7 @@ const AdminUsers = () => {
     identifier: "",
     role: "student" as "student" | "teacher",
     class_id: "",
+    email: "",
   });
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -131,13 +143,25 @@ const AdminUsers = () => {
       identifier: "",
       role: "student",
       class_id: "",
+      email: "",
     });
     clearAvatar();
+  };
+
+  const copyToClipboard = async (text: string, field: "email" | "password") => {
+    await navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
   };
 
   const handleCreateUser = async () => {
     if (!createForm.full_name.trim() || !createForm.identifier.trim()) {
       toast.error("Please fill in name and ID");
+      return;
+    }
+
+    if (createForm.role === "teacher" && !createForm.email.trim()) {
+      toast.error("Email is required for teachers");
       return;
     }
 
@@ -174,6 +198,7 @@ const AdminUsers = () => {
           role: createForm.role,
           class_id: createForm.class_id || null,
           avatar_url: avatarUrl,
+          email: createForm.role === "teacher" ? createForm.email : null,
         },
       });
 
@@ -185,10 +210,18 @@ const AdminUsers = () => {
         throw new Error(data.error);
       }
 
-      toast.success("User created successfully");
+      // Show credentials dialog
+      setCreatedCredentials({
+        email: data.user.email,
+        password: data.password,
+        full_name: data.user.full_name,
+        role: data.user.role,
+      });
+      
       queryClient.invalidateQueries({ queryKey: ["users"] });
       setIsCreateDialogOpen(false);
       resetCreateForm();
+      setIsCredentialsDialogOpen(true);
     } catch (error) {
       console.error("Error creating user:", error);
       toast.error(error instanceof Error ? error.message : "Failed to create user");
@@ -593,6 +626,21 @@ const AdminUsers = () => {
               </Select>
             </div>
 
+            {createForm.role === "teacher" && (
+              <div className="space-y-2">
+                <Label htmlFor="create_email">Email *</Label>
+                <Input
+                  id="create_email"
+                  type="email"
+                  value={createForm.email}
+                  onChange={(e) =>
+                    setCreateForm({ ...createForm, email: e.target.value })
+                  }
+                  placeholder="e.g., teacher@school.com"
+                />
+              </div>
+            )}
+
             {createForm.role === "student" && (
               <div className="space-y-2">
                 <Label htmlFor="create_class">Class</Label>
@@ -724,6 +772,79 @@ const AdminUsers = () => {
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               )}
               Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Credentials Dialog - shown after user creation */}
+      <Dialog open={isCredentialsDialogOpen} onOpenChange={setIsCredentialsDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Key className="h-5 w-5 text-primary" />
+              User Created Successfully
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="rounded-lg bg-muted p-4 space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Share these login credentials with <strong>{createdCredentials?.full_name}</strong> ({createdCredentials?.role}):
+              </p>
+              
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground">Email / Username</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={createdCredentials?.email || ""}
+                    readOnly
+                    className="font-mono text-sm bg-background"
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(createdCredentials?.email || "", "email")}
+                  >
+                    {copiedField === "email" ? (
+                      <Check className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground">Password</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={createdCredentials?.password || ""}
+                    readOnly
+                    className="font-mono text-sm bg-background"
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(createdCredentials?.password || "", "password")}
+                  >
+                    {copiedField === "password" ? (
+                      <Check className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <p className="text-xs text-amber-600 dark:text-amber-400 flex items-start gap-2">
+              <span className="text-lg leading-none">⚠️</span>
+              <span>Make sure to save these credentials! The password cannot be retrieved later.</span>
+            </p>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setIsCredentialsDialogOpen(false)}>
+              Done
             </Button>
           </DialogFooter>
         </DialogContent>
