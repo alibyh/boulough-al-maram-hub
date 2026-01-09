@@ -236,6 +236,7 @@ export type Database = {
       timetable_slots: {
         Row: {
           class_id: string
+          classroom: string | null
           created_at: string
           day_of_week: number
           end_time: string
@@ -246,6 +247,7 @@ export type Database = {
         }
         Insert: {
           class_id: string
+          classroom?: string | null
           created_at?: string
           day_of_week: number
           end_time: string
@@ -256,6 +258,7 @@ export type Database = {
         }
         Update: {
           class_id?: string
+          classroom?: string | null
           created_at?: string
           day_of_week?: number
           end_time?: string

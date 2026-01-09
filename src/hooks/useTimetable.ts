@@ -8,6 +8,7 @@ export interface TimetableSlot {
   day_of_week: number; // 0=Sunday, 6=Saturday
   start_time: string;
   end_time: string;
+  classroom?: string;
   created_at: string;
   updated_at: string;
   subjects?: {
@@ -63,6 +64,7 @@ export const useCreateTimetableSlot = () => {
       day_of_week: number;
       start_time: string;
       end_time: string;
+      classroom?: string;
     }) => {
       const { data, error } = await supabase
         .from("timetable_slots")
@@ -92,6 +94,7 @@ export const useUpdateTimetableSlot = () => {
       day_of_week?: number;
       start_time?: string;
       end_time?: string;
+      classroom?: string;
     }) => {
       const { data, error } = await supabase
         .from("timetable_slots")

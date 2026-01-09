@@ -3,14 +3,22 @@ import { useTranslation } from "react-i18next";
 import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Clock, Loader2, BookOpen } from "lucide-react";
+import { Clock, Loader2, BookOpen, MapPin, Timer } from "lucide-react";
 import { useClasses } from "@/hooks/useClasses";
-import { useTimetableByClass, DAY_NAMES, TimetableSlot } from "@/hooks/useTimetable";
+import { useTimetableByClass, TimetableSlot } from "@/hooks/useTimetable";
 
 const Timetable = () => {
   const { t } = useTranslation();
   const { data: classes, isLoading: classesLoading } = useClasses();
   const [selectedClassId, setSelectedClassId] = useState<string>("");
+  const [selectedDay, setSelectedDay] = useState<"today" | "tomorrow">("today");
+  const [now, setNow] = useState(new Date());
+
+  // Update time every minute for countdown
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Set first class as default when loaded
   useEffect(() => {
@@ -22,40 +30,54 @@ const Timetable = () => {
   const { data: timetableSlots, isLoading: timetableLoading } =
     useTimetableByClass(selectedClassId);
 
-  // Group slots by day, only include days that have classes
-  const slotsByDay = useMemo(() => {
-    if (!timetableSlots?.length) return {};
+  // Get today and tomorrow's day of week (0=Sunday, 6=Saturday)
+  const todayDayOfWeek = now.getDay();
+  const tomorrowDayOfWeek = (todayDayOfWeek + 1) % 7;
+
+  // Get slots for selected day
+  const displayDayOfWeek = selectedDay === "today" ? todayDayOfWeek : tomorrowDayOfWeek;
+  
+  const slotsForDay = useMemo(() => {
+    if (!timetableSlots?.length) return [];
+    return timetableSlots
+      .filter((slot) => slot.day_of_week === displayDayOfWeek)
+      .sort((a, b) => a.start_time.localeCompare(b.start_time));
+  }, [timetableSlots, displayDayOfWeek]);
+
+  // Calculate time status for a slot
+  const getSlotStatus = (slot: TimetableSlot) => {
+    if (selectedDay !== "today") return null;
     
-    const grouped: Record<number, TimetableSlot[]> = {};
+    const currentHours = now.getHours();
+    const currentMinutes = now.getMinutes();
+    const currentTotalMinutes = currentHours * 60 + currentMinutes;
     
-    timetableSlots.forEach((slot) => {
-      if (!grouped[slot.day_of_week]) {
-        grouped[slot.day_of_week] = [];
-      }
-      grouped[slot.day_of_week].push(slot);
-    });
+    const [startH, startM] = slot.start_time.split(":").map(Number);
+    const [endH, endM] = slot.end_time.split(":").map(Number);
+    const startTotalMinutes = startH * 60 + startM;
+    const endTotalMinutes = endH * 60 + endM;
 
-    // Sort slots within each day by start_time
-    Object.keys(grouped).forEach((day) => {
-      grouped[Number(day)].sort((a, b) => 
-        a.start_time.localeCompare(b.start_time)
-      );
-    });
+    if (currentTotalMinutes < startTotalMinutes) {
+      const minsUntilStart = startTotalMinutes - currentTotalMinutes;
+      return { type: "upcoming", minutes: minsUntilStart };
+    } else if (currentTotalMinutes >= startTotalMinutes && currentTotalMinutes < endTotalMinutes) {
+      const minsUntilEnd = endTotalMinutes - currentTotalMinutes;
+      return { type: "ongoing", minutes: minsUntilEnd };
+    } else {
+      return { type: "finished", minutes: 0 };
+    }
+  };
 
-    return grouped;
-  }, [timetableSlots]);
+  const formatTime = (time: string) => time.slice(0, 5);
 
-  // Get days that have classes, sorted
-  const daysWithClasses = useMemo(() => {
-    return Object.keys(slotsByDay)
-      .map(Number)
-      .sort((a, b) => a - b);
-  }, [slotsByDay]);
+  const getDayLabel = (day: "today" | "tomorrow") => {
+    const date = new Date();
+    if (day === "tomorrow") date.setDate(date.getDate() + 1);
+    return date.toLocaleDateString("en-US", { weekday: "long" });
+  };
 
   const selectedClass = classes?.find((c) => c.id === selectedClassId);
   const isLoading = classesLoading || timetableLoading;
-
-  const formatTime = (time: string) => time.slice(0, 5);
 
   return (
     <Layout>
@@ -118,67 +140,116 @@ const Timetable = () => {
             </CardContent>
           </Card>
 
-          {/* Selected Class Info */}
+          {/* Today/Tomorrow Tabs */}
           {selectedClass && (
-            <div className="mb-6 p-4 bg-muted/50 rounded-lg border border-border/50">
-              <h2 className="font-heading text-xl font-bold text-foreground">
-                {selectedClass.name}
-              </h2>
+            <div className="mb-6">
+              <Tabs
+                value={selectedDay}
+                onValueChange={(v) => setSelectedDay(v as "today" | "tomorrow")}
+                className="w-full"
+              >
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="today" className="text-base py-3">
+                    <div className="flex flex-col items-center gap-0.5">
+                      <span className="font-semibold">Today</span>
+                      <span className="text-xs text-muted-foreground">
+                        {getDayLabel("today")}
+                      </span>
+                    </div>
+                  </TabsTrigger>
+                  <TabsTrigger value="tomorrow" className="text-base py-3">
+                    <div className="flex flex-col items-center gap-0.5">
+                      <span className="font-semibold">Tomorrow</span>
+                      <span className="text-xs text-muted-foreground">
+                        {getDayLabel("tomorrow")}
+                      </span>
+                    </div>
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
             </div>
           )}
 
-          {/* Schedule by Day */}
+          {/* Schedule */}
           {isLoading ? (
             <div className="flex justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
-          ) : !daysWithClasses.length ? (
+          ) : !slotsForDay.length ? (
             <Card className="border-border/50">
               <CardContent className="py-12 text-center text-muted-foreground">
-                No timetable configured for this class yet.
+                No classes scheduled for {selectedDay === "today" ? "today" : "tomorrow"}.
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-6">
-              {daysWithClasses.map((day) => (
-                <div key={day} className="space-y-3">
-                  {/* Day Header */}
-                  <h3 className="font-heading text-lg font-bold text-foreground border-b border-border pb-2">
-                    {t(`timetablePage.${DAY_NAMES[day].toLowerCase()}`)}
-                  </h3>
+            <div className="space-y-4">
+              {slotsForDay.map((slot) => {
+                const status = getSlotStatus(slot);
+                const isOngoing = status?.type === "ongoing";
+                const isUpcoming = status?.type === "upcoming";
+                const isFinished = status?.type === "finished";
 
-                  {/* Slots for this day */}
-                  <div className="space-y-3">
-                    {slotsByDay[day].map((slot) => (
-                      <Card 
-                        key={slot.id} 
-                        className="border-border/50 hover:shadow-md transition-shadow"
-                      >
-                        <CardContent className="p-4">
-                          <div className="flex items-start gap-4">
-                            {/* Time Badge */}
-                            <div className="flex-shrink-0 min-w-[100px]">
-                              <div className="text-sm font-medium text-muted-foreground">
-                                {formatTime(slot.start_time)} – {formatTime(slot.end_time)}
-                              </div>
-                            </div>
-
-                            {/* Subject Info */}
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <BookOpen className="h-4 w-4 text-primary" />
-                                <h4 className="font-semibold text-foreground">
-                                  {slot.subjects?.name || "Unknown Subject"}
-                                </h4>
-                              </div>
-                            </div>
+                return (
+                  <Card
+                    key={slot.id}
+                    className={`border-border/50 transition-all ${
+                      isOngoing
+                        ? "ring-2 ring-primary bg-primary/5"
+                        : isFinished
+                        ? "opacity-60"
+                        : ""
+                    }`}
+                  >
+                    <CardContent className="p-5">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 space-y-2">
+                          {/* Subject Name */}
+                          <div className="flex items-center gap-2">
+                            <BookOpen className="h-5 w-5 text-primary" />
+                            <h4 className="font-heading text-lg font-semibold text-foreground">
+                              {slot.subjects?.name || "Unknown Subject"}
+                            </h4>
                           </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </div>
-              ))}
+
+                          {/* Time and Classroom */}
+                          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1.5">
+                              <Clock className="h-4 w-4" />
+                              <span>
+                                {formatTime(slot.start_time)} – {formatTime(slot.end_time)}
+                              </span>
+                            </div>
+                            {slot.classroom && (
+                              <div className="flex items-center gap-1.5">
+                                <MapPin className="h-4 w-4" />
+                                <span>{slot.classroom}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Status Badge */}
+                        {status && selectedDay === "today" && (
+                          <div
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${
+                              isOngoing
+                                ? "bg-primary text-primary-foreground"
+                                : isUpcoming
+                                ? "bg-accent text-accent-foreground"
+                                : "bg-muted text-muted-foreground"
+                            }`}
+                          >
+                            <Timer className="h-3.5 w-3.5" />
+                            {isOngoing && <span>{status.minutes}m left</span>}
+                            {isUpcoming && <span>in {status.minutes}m</span>}
+                            {isFinished && <span>Done</span>}
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </div>

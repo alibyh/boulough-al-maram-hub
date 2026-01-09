@@ -33,6 +33,7 @@ import {
   Plus,
   ArrowLeft,
   Trash2,
+  Pencil,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useClasses } from "@/hooks/useClasses";
@@ -40,8 +41,10 @@ import { useSubjects } from "@/hooks/useSubjects";
 import {
   useTimetableByClass,
   useCreateTimetableSlot,
+  useUpdateTimetableSlot,
   useDeleteTimetableSlot,
   DAY_NAMES,
+  TimetableSlot,
 } from "@/hooks/useTimetable";
 import { toast } from "sonner";
 
@@ -63,16 +66,19 @@ const AdminTimetable = () => {
     useTimetableByClass(selectedClassId);
 
   const createSlot = useCreateTimetableSlot();
+  const updateSlot = useUpdateTimetableSlot();
   const deleteSlot = useDeleteTimetableSlot();
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingSlot, setEditingSlot] = useState<TimetableSlot | null>(null);
   const [useCustomTime, setUseCustomTime] = useState(false);
-  const [newSlot, setNewSlot] = useState({
+  const [formData, setFormData] = useState({
     subject_id: "",
     day_of_week: 0,
-    time_slot: "0", // index of predefined slot
+    time_slot: "0",
     start_time: "",
     end_time: "",
+    classroom: "",
   });
 
   useEffect(() => {
@@ -87,6 +93,56 @@ const AdminTimetable = () => {
     }
   }, [classes, selectedClassId]);
 
+  // Reset form when dialog closes
+  useEffect(() => {
+    if (!dialogOpen) {
+      setEditingSlot(null);
+      setUseCustomTime(false);
+      setFormData({
+        subject_id: "",
+        day_of_week: 0,
+        time_slot: "0",
+        start_time: "",
+        end_time: "",
+        classroom: "",
+      });
+    }
+  }, [dialogOpen]);
+
+  // Populate form when editing
+  useEffect(() => {
+    if (editingSlot) {
+      // Check if it matches a predefined slot
+      const predefinedIndex = PREDEFINED_SLOTS.findIndex(
+        (s) =>
+          s.start_time === editingSlot.start_time.slice(0, 5) &&
+          s.end_time === editingSlot.end_time.slice(0, 5)
+      );
+      
+      if (predefinedIndex >= 0) {
+        setUseCustomTime(false);
+        setFormData({
+          subject_id: editingSlot.subject_id,
+          day_of_week: editingSlot.day_of_week,
+          time_slot: predefinedIndex.toString(),
+          start_time: "",
+          end_time: "",
+          classroom: editingSlot.classroom || "",
+        });
+      } else {
+        setUseCustomTime(true);
+        setFormData({
+          subject_id: editingSlot.subject_id,
+          day_of_week: editingSlot.day_of_week,
+          time_slot: "0",
+          start_time: editingSlot.start_time.slice(0, 5),
+          end_time: editingSlot.end_time.slice(0, 5),
+          classroom: editingSlot.classroom || "",
+        });
+      }
+    }
+  }, [editingSlot]);
+
   if (isLoading || classesLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -99,34 +155,51 @@ const AdminTimetable = () => {
     return null;
   }
 
-  const handleCreateSlot = async () => {
-    let startTime = newSlot.start_time;
-    let endTime = newSlot.end_time;
+  const handleOpenEdit = (slot: TimetableSlot) => {
+    setEditingSlot(slot);
+    setDialogOpen(true);
+  };
+
+  const handleSubmit = async () => {
+    let startTime = formData.start_time;
+    let endTime = formData.end_time;
 
     if (!useCustomTime) {
-      const selectedSlot = PREDEFINED_SLOTS[parseInt(newSlot.time_slot)];
+      const selectedSlot = PREDEFINED_SLOTS[parseInt(formData.time_slot)];
       startTime = selectedSlot.start_time;
       endTime = selectedSlot.end_time;
     }
 
-    if (!selectedClassId || !newSlot.subject_id || !startTime || !endTime) {
-      toast.error("Please fill all fields");
+    if (!selectedClassId || !formData.subject_id || !startTime || !endTime) {
+      toast.error("Please fill all required fields");
       return;
     }
+
     try {
-      await createSlot.mutateAsync({
-        class_id: selectedClassId,
-        subject_id: newSlot.subject_id,
-        day_of_week: newSlot.day_of_week,
-        start_time: startTime,
-        end_time: endTime,
-      });
-      setNewSlot({ subject_id: "", day_of_week: 0, time_slot: "0", start_time: "", end_time: "" });
-      setUseCustomTime(false);
+      if (editingSlot) {
+        await updateSlot.mutateAsync({
+          id: editingSlot.id,
+          subject_id: formData.subject_id,
+          day_of_week: formData.day_of_week,
+          start_time: startTime,
+          end_time: endTime,
+          classroom: formData.classroom || undefined,
+        });
+        toast.success("Time slot updated successfully");
+      } else {
+        await createSlot.mutateAsync({
+          class_id: selectedClassId,
+          subject_id: formData.subject_id,
+          day_of_week: formData.day_of_week,
+          start_time: startTime,
+          end_time: endTime,
+          classroom: formData.classroom || undefined,
+        });
+        toast.success("Time slot added successfully");
+      }
       setDialogOpen(false);
-      toast.success("Time slot added successfully");
     } catch (error) {
-      toast.error("Failed to add time slot");
+      toast.error(editingSlot ? "Failed to update time slot" : "Failed to add time slot");
     }
   };
 
@@ -150,6 +223,8 @@ const AdminTimetable = () => {
     },
     {} as Record<number, typeof timetableSlots>
   );
+
+  const isPending = createSlot.isPending || updateSlot.isPending;
 
   return (
     <div className="min-h-screen bg-background">
@@ -221,15 +296,17 @@ const AdminTimetable = () => {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Add Time Slot</DialogTitle>
+                  <DialogTitle>
+                    {editingSlot ? "Edit Time Slot" : "Add Time Slot"}
+                  </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
                     <Label>Subject</Label>
                     <Select
-                      value={newSlot.subject_id}
+                      value={formData.subject_id}
                       onValueChange={(v) =>
-                        setNewSlot({ ...newSlot, subject_id: v })
+                        setFormData({ ...formData, subject_id: v })
                       }
                     >
                       <SelectTrigger>
@@ -247,9 +324,9 @@ const AdminTimetable = () => {
                   <div className="space-y-2">
                     <Label>Day</Label>
                     <Select
-                      value={newSlot.day_of_week.toString()}
+                      value={formData.day_of_week.toString()}
                       onValueChange={(v) =>
-                        setNewSlot({ ...newSlot, day_of_week: parseInt(v) })
+                        setFormData({ ...formData, day_of_week: parseInt(v) })
                       }
                     >
                       <SelectTrigger>
@@ -268,9 +345,9 @@ const AdminTimetable = () => {
                     <Label>Time Slot</Label>
                     {!useCustomTime ? (
                       <Select
-                        value={newSlot.time_slot}
+                        value={formData.time_slot}
                         onValueChange={(v) =>
-                          setNewSlot({ ...newSlot, time_slot: v })
+                          setFormData({ ...formData, time_slot: v })
                         }
                       >
                         <SelectTrigger>
@@ -290,9 +367,9 @@ const AdminTimetable = () => {
                           <Label>Start Time</Label>
                           <Input
                             type="time"
-                            value={newSlot.start_time}
+                            value={formData.start_time}
                             onChange={(e) =>
-                              setNewSlot({ ...newSlot, start_time: e.target.value })
+                              setFormData({ ...formData, start_time: e.target.value })
                             }
                           />
                         </div>
@@ -300,9 +377,9 @@ const AdminTimetable = () => {
                           <Label>End Time</Label>
                           <Input
                             type="time"
-                            value={newSlot.end_time}
+                            value={formData.end_time}
                             onChange={(e) =>
-                              setNewSlot({ ...newSlot, end_time: e.target.value })
+                              setFormData({ ...formData, end_time: e.target.value })
                             }
                           />
                         </div>
@@ -317,15 +394,25 @@ const AdminTimetable = () => {
                       {useCustomTime ? "Use predefined slots" : "Add custom time"}
                     </Button>
                   </div>
+                  <div className="space-y-2">
+                    <Label>Classroom (optional)</Label>
+                    <Input
+                      placeholder="e.g., Room 101, Lab A"
+                      value={formData.classroom}
+                      onChange={(e) =>
+                        setFormData({ ...formData, classroom: e.target.value })
+                      }
+                    />
+                  </div>
                   <Button
-                    onClick={handleCreateSlot}
-                    disabled={createSlot.isPending}
+                    onClick={handleSubmit}
+                    disabled={isPending}
                     className="w-full"
                   >
-                    {createSlot.isPending && (
+                    {isPending && (
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     )}
-                    Add Slot
+                    {editingSlot ? "Update Slot" : "Add Slot"}
                   </Button>
                 </div>
               </DialogContent>
@@ -357,7 +444,8 @@ const AdminTimetable = () => {
                           <TableRow>
                             <TableHead>Time</TableHead>
                             <TableHead>Subject</TableHead>
-                            <TableHead className="w-[80px]">Actions</TableHead>
+                            <TableHead>Classroom</TableHead>
+                            <TableHead className="w-[100px]">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -369,14 +457,26 @@ const AdminTimetable = () => {
                                   {slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}
                                 </TableCell>
                                 <TableCell>{slot.subjects?.name}</TableCell>
+                                <TableCell className="text-muted-foreground">
+                                  {slot.classroom || "—"}
+                                </TableCell>
                                 <TableCell>
-                                  <Button
-                                    size="icon"
-                                    variant="destructive"
-                                    onClick={() => handleDeleteSlot(slot.id)}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
+                                  <div className="flex gap-1">
+                                    <Button
+                                      size="icon"
+                                      variant="outline"
+                                      onClick={() => handleOpenEdit(slot)}
+                                    >
+                                      <Pencil className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      size="icon"
+                                      variant="destructive"
+                                      onClick={() => handleDeleteSlot(slot.id)}
+                                    >
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
                                 </TableCell>
                               </TableRow>
                             ))}
