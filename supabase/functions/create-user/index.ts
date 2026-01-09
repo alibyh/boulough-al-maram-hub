@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
     }
 
     // Parse request body
-    const { full_name, identifier, role, class_id, avatar_url } = await req.json();
+    const { full_name, identifier, role, class_id, avatar_url, email } = await req.json();
 
     if (!full_name || !identifier || !role) {
       return new Response(
@@ -63,17 +63,28 @@ Deno.serve(async (req) => {
       );
     }
 
+    // For teachers, email is required
+    if (role === "teacher" && !email) {
+      return new Response(
+        JSON.stringify({ error: "Email is required for teachers" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Admin client for creating users
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Generate a random email using identifier (since Supabase auth requires email)
-    const generatedEmail = `${identifier.toLowerCase().replace(/\s+/g, "_")}@school.local`;
+    // Use provided email for teachers, generate one for students
+    const userEmail = role === "teacher" && email 
+      ? email 
+      : `${identifier.toLowerCase().replace(/\s+/g, "_")}@school.local`;
+    
     // Generate a random password
-    const randomPassword = crypto.randomUUID();
+    const randomPassword = crypto.randomUUID().slice(0, 12);
 
     // Create the auth user
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email: generatedEmail,
+      email: userEmail,
       password: randomPassword,
       email_confirm: true, // Auto-confirm, no verification needed
       user_metadata: {
@@ -127,11 +138,13 @@ Deno.serve(async (req) => {
         success: true,
         user: {
           id: newUserId,
-          email: generatedEmail,
+          email: userEmail,
           full_name,
           identifier,
           role,
         },
+        // Return password so admin can share with user
+        password: randomPassword,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
