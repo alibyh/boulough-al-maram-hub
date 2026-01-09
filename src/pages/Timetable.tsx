@@ -1,10 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import Layout from "@/components/layout/Layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Clock, Loader2, BookOpen, MapPin, Timer, Calendar } from "lucide-react";
+import { Loader2, MapPin } from "lucide-react";
 import { useClasses } from "@/hooks/useClasses";
 import { useTimetableByClass, TimetableSlot, DAY_NAMES } from "@/hooks/useTimetable";
 
@@ -44,34 +41,6 @@ const Timetable = () => {
       .filter((slot) => slot.day_of_week === displayDayOfWeek)
       .sort((a, b) => a.start_time.localeCompare(b.start_time));
   }, [timetableSlots, displayDayOfWeek]);
-
-  // Get unique time slots and organize data for full table
-  const weeklySchedule = useMemo(() => {
-    if (!timetableSlots?.length) return { timeSlots: [], grid: {} };
-    
-    // Get unique time slots sorted
-    const timeSlots = [...new Set(timetableSlots.map(s => `${s.start_time}-${s.end_time}`))]
-      .sort()
-      .map(ts => {
-        const [start, end] = ts.split("-");
-        return { start, end, key: ts };
-      });
-
-    // Create grid: { "08:00-10:00": { 0: slot, 1: slot, ... } }
-    const grid: Record<string, Record<number, TimetableSlot>> = {};
-    timeSlots.forEach(ts => {
-      grid[ts.key] = {};
-    });
-    
-    timetableSlots.forEach(slot => {
-      const key = `${slot.start_time}-${slot.end_time}`;
-      if (grid[key]) {
-        grid[key][slot.day_of_week] = slot;
-      }
-    });
-
-    return { timeSlots, grid };
-  }, [timetableSlots]);
 
   // Get days that have at least one class
   const activeDays = useMemo(() => {
@@ -118,263 +87,212 @@ const Timetable = () => {
   return (
     <Layout>
       {/* Header */}
-      <section className="bg-hero-gradient py-16 md:py-24">
+      <section className="bg-hero-gradient py-12 md:py-16">
         <div className="container">
           <div className="max-w-2xl animate-fade-in">
-            <span className="text-sm font-semibold text-gold uppercase tracking-wider">
-              {t("common.timetable")}
-            </span>
-            <h1 className="font-heading text-4xl md:text-5xl font-bold text-primary-foreground mt-2 mb-4">
+            <h1 className="font-heading text-3xl md:text-4xl font-bold text-primary-foreground mb-2">
               {t("timetablePage.title")}
             </h1>
-            <p className="text-lg text-primary-foreground/80">
+            <p className="text-primary-foreground/80">
               {t("timetablePage.description")}
             </p>
           </div>
         </div>
       </section>
 
-      {/* Timetable */}
-      <section className="py-16">
-        <div className="container max-w-5xl">
-          {/* Class Selector */}
-          <Card className="border-border/50 shadow-elegant mb-8">
-            <CardHeader className="pb-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent">
-                  <Clock className="h-5 w-5 text-primary" />
-                </div>
-                <CardTitle className="font-heading">
-                  {t("timetablePage.selectGrade")}
-                </CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {classesLoading ? (
-                <div className="flex justify-center py-4">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                </div>
-              ) : !classes?.length ? (
-                <p className="text-center text-muted-foreground py-4">
-                  No classes available yet.
-                </p>
-              ) : (
-                <Tabs
-                  value={selectedClassId}
-                  onValueChange={setSelectedClassId}
-                  className="w-full"
-                >
-                  <TabsList className="flex-wrap h-auto w-full justify-start">
-                    {classes.map((cls) => (
-                      <TabsTrigger key={cls.id} value={cls.id}>
-                        {cls.name}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                </Tabs>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Today/Tomorrow Section */}
-          {selectedClass && (
-            <Card className="border-border/50 shadow-elegant mb-8">
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                    <Timer className="h-5 w-5 text-primary" />
-                  </div>
-                  <CardTitle className="font-heading">Quick View</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {/* Today/Tomorrow Tabs */}
-                <div className="mb-6">
-                  <Tabs
-                    value={selectedDay}
-                    onValueChange={(v) => setSelectedDay(v as "today" | "tomorrow")}
-                    className="w-full"
+      {/* Main Content */}
+      <section className="py-8 bg-muted/30 min-h-[60vh]">
+        <div className="container max-w-2xl">
+          
+          {/* Class Selector Pills */}
+          {classesLoading ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            </div>
+          ) : !classes?.length ? (
+            <div className="text-center text-muted-foreground py-12 bg-background rounded-xl">
+              No classes available yet.
+            </div>
+          ) : (
+            <>
+              <div className="flex flex-wrap gap-2 mb-6">
+                {classes.map((cls) => (
+                  <button
+                    key={cls.id}
+                    onClick={() => setSelectedClassId(cls.id)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                      selectedClassId === cls.id
+                        ? "bg-primary text-primary-foreground shadow-md"
+                        : "bg-background text-foreground hover:bg-muted border border-border"
+                    }`}
                   >
-                    <TabsList className="grid w-full grid-cols-2 h-14">
-                      <TabsTrigger value="today" className="text-base py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                        <div className="flex flex-col items-center gap-0.5">
-                          <span className="font-semibold">Today</span>
-                          <span className="text-xs opacity-80">
-                            {getDayLabel("today")}
-                          </span>
-                        </div>
-                      </TabsTrigger>
-                      <TabsTrigger value="tomorrow" className="text-base py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                        <div className="flex flex-col items-center gap-0.5">
-                          <span className="font-semibold">Tomorrow</span>
-                          <span className="text-xs opacity-80">
-                            {getDayLabel("tomorrow")}
-                          </span>
-                        </div>
-                      </TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                </div>
+                    {cls.name}
+                  </button>
+                ))}
+              </div>
 
-                {/* Schedule for selected day */}
-                {isLoading ? (
-                  <div className="flex justify-center py-8">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              {/* Today/Tomorrow Toggle */}
+              {selectedClass && (
+                <div className="bg-background rounded-xl border border-border overflow-hidden mb-6">
+                  <div className="grid grid-cols-2">
+                    <button
+                      onClick={() => setSelectedDay("today")}
+                      className={`py-4 text-center font-medium transition-all relative ${
+                        selectedDay === "today"
+                          ? "text-primary"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <span className="text-sm">Today</span>
+                      <span className="block text-xs text-muted-foreground mt-0.5">
+                        {getDayLabel("today")}
+                      </span>
+                      {selectedDay === "today" && (
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => setSelectedDay("tomorrow")}
+                      className={`py-4 text-center font-medium transition-all relative border-l border-border ${
+                        selectedDay === "tomorrow"
+                          ? "text-primary"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <span className="text-sm">Tomorrow</span>
+                      <span className="block text-xs text-muted-foreground mt-0.5">
+                        {getDayLabel("tomorrow")}
+                      </span>
+                      {selectedDay === "tomorrow" && (
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+                      )}
+                    </button>
                   </div>
-                ) : !slotsForDay.length ? (
-                  <div className="py-8 text-center text-muted-foreground bg-muted/30 rounded-lg">
-                    No classes scheduled for {selectedDay === "today" ? "today" : "tomorrow"}.
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {slotsForDay.map((slot) => {
-                      const status = getSlotStatus(slot);
-                      const isOngoing = status?.type === "ongoing";
-                      const isUpcoming = status?.type === "upcoming";
-                      const isFinished = status?.type === "finished";
 
-                      return (
-                        <div
-                          key={slot.id}
-                          className={`flex items-center justify-between gap-4 p-4 rounded-lg border transition-all ${
-                            isOngoing
-                              ? "border-primary bg-primary/10 ring-1 ring-primary"
-                              : isFinished
-                              ? "border-border/50 bg-muted/30 opacity-60"
-                              : "border-border/50 bg-background hover:bg-muted/30"
-                          }`}
-                        >
-                          <div className="flex items-center gap-4 flex-1 min-w-0">
-                            {/* Time */}
-                            <div className="flex flex-col items-center text-center min-w-[60px]">
-                              <span className="text-sm font-semibold text-foreground">
-                                {formatTime(slot.start_time)}
-                              </span>
-                              <span className="text-xs text-muted-foreground">
-                                {formatTime(slot.end_time)}
-                              </span>
-                            </div>
+                  {/* Quick View Slots */}
+                  <div className="border-t border-border">
+                    {isLoading ? (
+                      <div className="flex justify-center py-12">
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                      </div>
+                    ) : !slotsForDay.length ? (
+                      <div className="py-12 text-center text-muted-foreground">
+                        No classes scheduled
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-border">
+                        {slotsForDay.map((slot) => {
+                          const status = getSlotStatus(slot);
+                          const isOngoing = status?.type === "ongoing";
+                          const isFinished = status?.type === "finished";
 
-                            {/* Divider */}
-                            <div className="w-px h-10 bg-border" />
-
-                            {/* Subject & Classroom */}
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <BookOpen className="h-4 w-4 text-primary shrink-0" />
-                                <span className="font-medium text-foreground truncate">
-                                  {slot.subjects?.name || "Unknown Subject"}
-                                </span>
-                              </div>
-                              {slot.classroom && (
-                                <div className="flex items-center gap-2 mt-1">
-                                  <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                                  <span className="text-sm text-muted-foreground truncate">
-                                    {slot.classroom}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Status Badge */}
-                          {status && selectedDay === "today" && (
+                          return (
                             <div
-                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap ${
-                                isOngoing
-                                  ? "bg-primary text-primary-foreground"
-                                  : isUpcoming
-                                  ? "bg-accent text-accent-foreground"
-                                  : "bg-muted text-muted-foreground"
+                              key={slot.id}
+                              className={`p-4 ${isFinished ? "opacity-50" : ""} ${
+                                isOngoing ? "bg-primary/5" : ""
                               }`}
                             >
-                              <Timer className="h-3 w-3" />
-                              {isOngoing && <span>{status.minutes}m left</span>}
-                              {isUpcoming && <span>in {status.minutes}m</span>}
-                              {isFinished && <span>Done</span>}
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-medium text-foreground">
+                                    {slot.subjects?.name || "Unknown Subject"}
+                                  </h4>
+                                  <div className="flex flex-wrap items-center gap-2 mt-1 text-sm text-muted-foreground">
+                                    <span>
+                                      {formatTime(slot.start_time)}– {formatTime(slot.end_time)}
+                                    </span>
+                                    {slot.classroom && (
+                                      <>
+                                        <span>•</span>
+                                        <span className="flex items-center gap-1">
+                                          <MapPin className="h-3 w-3" />
+                                          {slot.classroom}
+                                        </span>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {status && selectedDay === "today" && (
+                                  <span
+                                    className={`text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap ${
+                                      isOngoing
+                                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                        : isFinished
+                                        ? "bg-muted text-muted-foreground"
+                                        : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                                    }`}
+                                  >
+                                    {isOngoing && `${status.minutes}m left`}
+                                    {status.type === "upcoming" && `in ${status.minutes}m`}
+                                    {isFinished && "Done"}
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Full Weekly Timetable */}
-          {selectedClass && !isLoading && timetableSlots?.length > 0 && (
-            <Card className="border-border/50 shadow-elegant">
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary/50">
-                    <Calendar className="h-5 w-5 text-primary" />
-                  </div>
-                  <CardTitle className="font-heading">Full Week Schedule</CardTitle>
                 </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                {activeDays.map(dayOfWeek => {
-                  const daySlots = timetableSlots
-                    .filter(s => s.day_of_week === dayOfWeek)
-                    .sort((a, b) => a.start_time.localeCompare(b.start_time));
-                  
-                  const isToday = dayOfWeek === todayDayOfWeek;
-                  
-                  // Calculate the actual date for this day of week
-                  const dayDate = new Date();
-                  const diff = dayOfWeek - todayDayOfWeek;
-                  dayDate.setDate(dayDate.getDate() + (diff < 0 ? diff + 7 : diff));
+              )}
 
-                  return (
-                    <div key={dayOfWeek} className="border-t first:border-t-0 border-border/50">
-                      {/* Day Header */}
-                      <div className={`px-6 py-4 ${isToday ? "bg-primary/5" : "bg-muted/30"}`}>
-                        <h3 className="text-lg font-semibold">
-                          <span className={isToday ? "text-primary" : "text-foreground"}>
+              {/* Full Week Schedule */}
+              {selectedClass && !isLoading && timetableSlots && timetableSlots.length > 0 && (
+                <div className="bg-background rounded-xl border border-border overflow-hidden">
+                  {activeDays.map((dayOfWeek, idx) => {
+                    const daySlots = timetableSlots
+                      .filter(s => s.day_of_week === dayOfWeek)
+                      .sort((a, b) => a.start_time.localeCompare(b.start_time));
+                    
+                    const isToday = dayOfWeek === todayDayOfWeek;
+                    
+                    // Calculate the actual date for this day of week
+                    const dayDate = new Date();
+                    const diff = dayOfWeek - todayDayOfWeek;
+                    dayDate.setDate(dayDate.getDate() + (diff < 0 ? diff + 7 : diff));
+
+                    return (
+                      <div key={dayOfWeek} className={idx > 0 ? "border-t border-border" : ""}>
+                        {/* Day Header */}
+                        <div className={`px-4 py-3 ${isToday ? "bg-primary/5" : "bg-muted/50"}`}>
+                          <span className={`font-semibold ${isToday ? "text-primary" : "text-foreground"}`}>
                             {DAY_NAMES[dayOfWeek]}
                           </span>
-                          <span className="text-muted-foreground font-normal ml-1">
+                          <span className="text-muted-foreground ml-1">
                             {dayDate.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
                           </span>
-                          {isToday && (
-                            <span className="ml-2 text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                              Today
-                            </span>
-                          )}
-                        </h3>
-                      </div>
+                        </div>
 
-                      {/* Day Slots */}
-                      <div className="divide-y divide-border/30">
-                        {daySlots.map(slot => (
-                          <div key={slot.id} className="px-6 py-4 hover:bg-muted/20 transition-colors">
-                            {/* Subject Name */}
-                            <h4 className="font-medium text-foreground mb-2">
-                              {slot.subjects?.name || "Unknown Subject"}
-                            </h4>
-                            
-                            {/* Time & Details Row */}
-                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                              <span className="text-muted-foreground">
-                                {formatTime(slot.start_time)}– {formatTime(slot.end_time)}
-                              </span>
-                              
-                              {slot.classroom && (
-                                <span className="text-muted-foreground">
-                                  {slot.classroom}
+                        {/* Day Slots */}
+                        <div className="divide-y divide-border/50">
+                          {daySlots.map(slot => (
+                            <div key={slot.id} className="px-4 py-3">
+                              <h4 className="font-medium text-foreground">
+                                {slot.subjects?.name || "Unknown Subject"}
+                              </h4>
+                              <div className="flex flex-wrap items-center gap-2 mt-1 text-sm text-muted-foreground">
+                                <span>
+                                  {formatTime(slot.start_time)}– {formatTime(slot.end_time)}
                                 </span>
-                              )}
+                                {slot.classroom && (
+                                  <>
+                                    <span>•</span>
+                                    <span>{slot.classroom}</span>
+                                  </>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </CardContent>
-            </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>
