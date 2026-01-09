@@ -1,39 +1,53 @@
+import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Clock } from "lucide-react";
-
-const scheduleData = {
-  "Grade 9": [
-    { time: "7:30 - 8:15", monday: "Mathematics", tuesday: "English", wednesday: "Arabic", thursday: "Physics", friday: "History" },
-    { time: "8:20 - 9:05", monday: "English", tuesday: "Physics", wednesday: "Mathematics", thursday: "Chemistry", friday: "Geography" },
-    { time: "9:10 - 9:55", monday: "Arabic", tuesday: "Chemistry", wednesday: "Biology", thursday: "English", friday: "Mathematics" },
-    { time: "10:00 - 10:20", monday: "Break", tuesday: "Break", wednesday: "Break", thursday: "Break", friday: "Break" },
-    { time: "10:20 - 11:05", monday: "Physics", tuesday: "Biology", wednesday: "English", thursday: "Arabic", friday: "PE" },
-    { time: "11:10 - 11:55", monday: "Biology", tuesday: "Arabic", wednesday: "Physics", thursday: "Mathematics", friday: "Art" },
-    { time: "12:00 - 12:45", monday: "History", tuesday: "ICT", wednesday: "Chemistry", thursday: "ICT", friday: "Islamic Studies" },
-  ],
-  "Grade 10": [
-    { time: "7:30 - 8:15", monday: "Physics", tuesday: "Mathematics", wednesday: "English", thursday: "Arabic", friday: "Chemistry" },
-    { time: "8:20 - 9:05", monday: "Chemistry", tuesday: "English", wednesday: "Mathematics", thursday: "Physics", friday: "Biology" },
-    { time: "9:10 - 9:55", monday: "English", tuesday: "Arabic", wednesday: "Chemistry", thursday: "Biology", friday: "Mathematics" },
-    { time: "10:00 - 10:20", monday: "Break", tuesday: "Break", wednesday: "Break", thursday: "Break", friday: "Break" },
-    { time: "10:20 - 11:05", monday: "Arabic", tuesday: "Physics", wednesday: "Biology", thursday: "English", friday: "History" },
-    { time: "11:10 - 11:55", monday: "Mathematics", tuesday: "Chemistry", wednesday: "Arabic", thursday: "ICT", friday: "Geography" },
-    { time: "12:00 - 12:45", monday: "ICT", tuesday: "History", wednesday: "PE", thursday: "Art", friday: "Islamic Studies" },
-  ],
-  "Grade 11": [
-    { time: "7:30 - 8:15", monday: "Advanced Math", tuesday: "Physics", wednesday: "Chemistry", thursday: "English", friday: "Arabic" },
-    { time: "8:20 - 9:05", monday: "Physics", tuesday: "Advanced Math", wednesday: "English", thursday: "Chemistry", friday: "Biology" },
-    { time: "9:10 - 9:55", monday: "Chemistry", tuesday: "English", wednesday: "Advanced Math", thursday: "Biology", friday: "Physics" },
-    { time: "10:00 - 10:20", monday: "Break", tuesday: "Break", wednesday: "Break", thursday: "Break", friday: "Break" },
-    { time: "10:20 - 11:05", monday: "English", tuesday: "Biology", wednesday: "Physics", thursday: "Advanced Math", friday: "Chemistry" },
-    { time: "11:10 - 11:55", monday: "Arabic", tuesday: "Arabic", wednesday: "Biology", thursday: "Arabic", friday: "ICT" },
-    { time: "12:00 - 12:45", monday: "Research", tuesday: "Research", wednesday: "Research", thursday: "Research", friday: "Islamic Studies" },
-  ],
-};
+import { Clock, Loader2 } from "lucide-react";
+import { useClasses } from "@/hooks/useClasses";
+import { useTimetableByClass, DAY_NAMES } from "@/hooks/useTimetable";
 
 const Timetable = () => {
+  const { t } = useTranslation();
+  const { data: classes, isLoading: classesLoading } = useClasses();
+  const [selectedClassId, setSelectedClassId] = useState<string>("");
+
+  // Set first class as default when loaded
+  useMemo(() => {
+    if (classes?.length && !selectedClassId) {
+      setSelectedClassId(classes[0].id);
+    }
+  }, [classes, selectedClassId]);
+
+  const { data: timetableSlots, isLoading: timetableLoading } =
+    useTimetableByClass(selectedClassId);
+
+  // Get unique time slots for the grid
+  const timeSlots = useMemo(() => {
+    if (!timetableSlots?.length) return [];
+    const times = new Set<string>();
+    timetableSlots.forEach((slot) => {
+      times.add(`${slot.start_time.slice(0, 5)} - ${slot.end_time.slice(0, 5)}`);
+    });
+    return Array.from(times).sort();
+  }, [timetableSlots]);
+
+  // Create a lookup for slots by day and time
+  const slotLookup = useMemo(() => {
+    if (!timetableSlots?.length) return {};
+    const lookup: Record<string, string> = {};
+    timetableSlots.forEach((slot) => {
+      const key = `${slot.day_of_week}-${slot.start_time.slice(0, 5)} - ${slot.end_time.slice(0, 5)}`;
+      lookup[key] = slot.subjects?.name || "";
+    });
+    return lookup;
+  }, [timetableSlots]);
+
+  // Days to show (Sunday to Thursday for schools)
+  const daysToShow = [0, 1, 2, 3, 4]; // Sunday to Thursday
+
+  const isLoading = classesLoading || timetableLoading;
+
   return (
     <Layout>
       {/* Header */}
@@ -41,13 +55,13 @@ const Timetable = () => {
         <div className="container">
           <div className="max-w-2xl animate-fade-in">
             <span className="text-sm font-semibold text-gold uppercase tracking-wider">
-              Schedule
+              {t("common.timetable")}
             </span>
             <h1 className="font-heading text-4xl md:text-5xl font-bold text-primary-foreground mt-2 mb-4">
-              Class Timetable
+              {t("timetablePage.title")}
             </h1>
             <p className="text-lg text-primary-foreground/80">
-              View the weekly schedule for each grade level.
+              {t("timetablePage.description")}
             </p>
           </div>
         </div>
@@ -62,57 +76,86 @@ const Timetable = () => {
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent">
                   <Clock className="h-5 w-5 text-primary" />
                 </div>
-                <CardTitle className="font-heading">Weekly Schedule</CardTitle>
+                <CardTitle className="font-heading">
+                  {t("timetablePage.selectGrade")}
+                </CardTitle>
               </div>
             </CardHeader>
             <CardContent>
-              <Tabs defaultValue="Grade 9" className="w-full">
-                <TabsList className="mb-6">
-                  {Object.keys(scheduleData).map((grade) => (
-                    <TabsTrigger key={grade} value={grade}>
-                      {grade}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
+              {classesLoading ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : !classes?.length ? (
+                <p className="text-center text-muted-foreground py-8">
+                  No classes available yet.
+                </p>
+              ) : (
+                <Tabs
+                  value={selectedClassId}
+                  onValueChange={setSelectedClassId}
+                  className="w-full"
+                >
+                  <TabsList className="mb-6 flex-wrap h-auto">
+                    {classes.map((cls) => (
+                      <TabsTrigger key={cls.id} value={cls.id}>
+                        {cls.name}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
 
-                {Object.entries(scheduleData).map(([grade, schedule]) => (
-                  <TabsContent key={grade} value={grade}>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-border">
-                            <th className="px-4 py-3 text-left font-semibold text-foreground">Time</th>
-                            <th className="px-4 py-3 text-left font-semibold text-foreground">Monday</th>
-                            <th className="px-4 py-3 text-left font-semibold text-foreground">Tuesday</th>
-                            <th className="px-4 py-3 text-left font-semibold text-foreground">Wednesday</th>
-                            <th className="px-4 py-3 text-left font-semibold text-foreground">Thursday</th>
-                            <th className="px-4 py-3 text-left font-semibold text-foreground">Friday</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {schedule.map((row, i) => (
-                            <tr
-                              key={i}
-                              className={`border-b border-border/50 ${
-                                row.monday === "Break" ? "bg-muted/50" : ""
-                              }`}
-                            >
-                              <td className="px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">
-                                {row.time}
-                              </td>
-                              <td className="px-4 py-3">{row.monday}</td>
-                              <td className="px-4 py-3">{row.tuesday}</td>
-                              <td className="px-4 py-3">{row.wednesday}</td>
-                              <td className="px-4 py-3">{row.thursday}</td>
-                              <td className="px-4 py-3">{row.friday}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </TabsContent>
-                ))}
-              </Tabs>
+                  {classes.map((cls) => (
+                    <TabsContent key={cls.id} value={cls.id}>
+                      {timetableLoading ? (
+                        <div className="flex justify-center py-8">
+                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        </div>
+                      ) : !timeSlots.length ? (
+                        <p className="text-center text-muted-foreground py-8">
+                          No timetable configured for this class yet.
+                        </p>
+                      ) : (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="border-b border-border">
+                                <th className="px-4 py-3 text-left font-semibold text-foreground">
+                                  {t("timetablePage.time")}
+                                </th>
+                                {daysToShow.map((day) => (
+                                  <th
+                                    key={day}
+                                    className="px-4 py-3 text-left font-semibold text-foreground"
+                                  >
+                                    {t(`timetablePage.${DAY_NAMES[day].toLowerCase()}`)}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {timeSlots.map((time, i) => (
+                                <tr
+                                  key={i}
+                                  className="border-b border-border/50"
+                                >
+                                  <td className="px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">
+                                    {time}
+                                  </td>
+                                  {daysToShow.map((day) => (
+                                    <td key={day} className="px-4 py-3">
+                                      {slotLookup[`${day}-${time}`] || "-"}
+                                    </td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                    </TabsContent>
+                  ))}
+                </Tabs>
+              )}
             </CardContent>
           </Card>
         </div>
