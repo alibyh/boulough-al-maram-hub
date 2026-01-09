@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import Layout from "@/components/layout/Layout";
-import { Loader2, MapPin } from "lucide-react";
+import { Loader2, MapPin, User } from "lucide-react";
 import { useClasses } from "@/hooks/useClasses";
 import { useTimetableByClass, TimetableSlot, DAY_NAMES } from "@/hooks/useTimetable";
 
@@ -137,46 +137,46 @@ const Timetable = () => {
                   <div className="grid grid-cols-2">
                     <button
                       onClick={() => setSelectedDay("today")}
-                      className={`py-4 text-center font-medium transition-all relative ${
+                      className={`py-5 text-center font-medium transition-all relative ${
                         selectedDay === "today"
-                          ? "text-primary"
-                          : "text-muted-foreground hover:text-foreground"
+                          ? "text-primary bg-primary/5"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                       }`}
                     >
-                      <span className="text-sm">Today</span>
-                      <span className="block text-xs text-muted-foreground mt-0.5">
+                      <span className="text-base font-semibold">Today</span>
+                      <span className="block text-sm text-muted-foreground mt-1">
                         {getDayLabel("today")}
                       </span>
                       {selectedDay === "today" && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary" />
                       )}
                     </button>
                     <button
                       onClick={() => setSelectedDay("tomorrow")}
-                      className={`py-4 text-center font-medium transition-all relative border-l border-border ${
+                      className={`py-5 text-center font-medium transition-all relative border-l border-border ${
                         selectedDay === "tomorrow"
-                          ? "text-primary"
-                          : "text-muted-foreground hover:text-foreground"
+                          ? "text-primary bg-primary/5"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                       }`}
                     >
-                      <span className="text-sm">Tomorrow</span>
-                      <span className="block text-xs text-muted-foreground mt-0.5">
+                      <span className="text-base font-semibold">Tomorrow</span>
+                      <span className="block text-sm text-muted-foreground mt-1">
                         {getDayLabel("tomorrow")}
                       </span>
                       {selectedDay === "tomorrow" && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary" />
                       )}
                     </button>
                   </div>
 
                   {/* Quick View Slots */}
-                  <div className="border-t border-border">
+                  <div className="border-t border-border min-h-[320px] max-h-[400px] overflow-y-auto">
                     {isLoading ? (
-                      <div className="flex justify-center py-12">
+                      <div className="flex justify-center items-center h-[320px]">
                         <Loader2 className="h-6 w-6 animate-spin text-primary" />
                       </div>
                     ) : !slotsForDay.length ? (
-                      <div className="py-12 text-center text-muted-foreground">
+                      <div className="flex items-center justify-center h-[320px] text-muted-foreground">
                         No classes scheduled
                       </div>
                     ) : (
@@ -198,18 +198,21 @@ const Timetable = () => {
                                   <h4 className="font-medium text-foreground">
                                     {slot.subjects?.name || "Unknown Subject"}
                                   </h4>
-                                  <div className="flex flex-wrap items-center gap-2 mt-1 text-sm text-muted-foreground">
+                                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-sm text-muted-foreground">
                                     <span>
-                                      {formatTime(slot.start_time)}– {formatTime(slot.end_time)}
+                                      {formatTime(slot.start_time)} – {formatTime(slot.end_time)}
                                     </span>
+                                    {slot.profiles?.full_name && (
+                                      <span className="flex items-center gap-1">
+                                        <User className="h-3 w-3" />
+                                        {slot.profiles.full_name}
+                                      </span>
+                                    )}
                                     {slot.classroom && (
-                                      <>
-                                        <span>•</span>
-                                        <span className="flex items-center gap-1">
-                                          <MapPin className="h-3 w-3" />
-                                          {slot.classroom}
-                                        </span>
-                                      </>
+                                      <span className="flex items-center gap-1">
+                                        <MapPin className="h-3 w-3" />
+                                        {slot.classroom}
+                                      </span>
                                     )}
                                   </div>
                                 </div>
@@ -289,15 +292,21 @@ const Timetable = () => {
                               <h4 className="font-medium text-foreground">
                                 {slot.subjects?.name || "Unknown Subject"}
                               </h4>
-                              <div className="flex flex-wrap items-center gap-2 mt-1 text-sm text-muted-foreground">
+                              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-sm text-muted-foreground">
                                 <span>
-                                  {formatTime(slot.start_time)}– {formatTime(slot.end_time)}
+                                  {formatTime(slot.start_time)} – {formatTime(slot.end_time)}
                                 </span>
+                                {slot.profiles?.full_name && (
+                                  <span className="flex items-center gap-1">
+                                    <User className="h-3 w-3" />
+                                    {slot.profiles.full_name}
+                                  </span>
+                                )}
                                 {slot.classroom && (
-                                  <>
-                                    <span>•</span>
-                                    <span>{slot.classroom}</span>
-                                  </>
+                                  <span className="flex items-center gap-1">
+                                    <MapPin className="h-3 w-3" />
+                                    {slot.classroom}
+                                  </span>
                                 )}
                               </div>
                             </div>

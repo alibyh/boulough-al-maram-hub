@@ -5,6 +5,7 @@ export interface TimetableSlot {
   id: string;
   class_id: string;
   subject_id: string;
+  teacher_id?: string;
   day_of_week: number; // 0=Sunday, 6=Saturday
   start_time: string;
   end_time: string;
@@ -19,6 +20,10 @@ export interface TimetableSlot {
     id: string;
     name: string;
   };
+  profiles?: {
+    id: string;
+    full_name: string;
+  };
 }
 
 export const useTimetableByClass = (classId?: string) => {
@@ -28,7 +33,7 @@ export const useTimetableByClass = (classId?: string) => {
       if (!classId) return [];
       const { data, error } = await supabase
         .from("timetable_slots")
-        .select("*, subjects(*), classes(*)")
+        .select("*, subjects(*), classes(*), profiles(*)")
         .eq("class_id", classId)
         .order("day_of_week")
         .order("start_time");
@@ -45,7 +50,7 @@ export const useAllTimetableSlots = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("timetable_slots")
-        .select("*, subjects(*), classes(*)")
+        .select("*, subjects(*), classes(*), profiles(*)")
         .order("class_id")
         .order("day_of_week")
         .order("start_time");
@@ -65,6 +70,7 @@ export const useCreateTimetableSlot = () => {
       start_time: string;
       end_time: string;
       classroom?: string;
+      teacher_id?: string;
     }) => {
       const { data, error } = await supabase
         .from("timetable_slots")
@@ -95,6 +101,7 @@ export const useUpdateTimetableSlot = () => {
       start_time?: string;
       end_time?: string;
       classroom?: string;
+      teacher_id?: string;
     }) => {
       const { data, error } = await supabase
         .from("timetable_slots")
