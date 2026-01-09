@@ -241,8 +241,10 @@ const Timetable = () => {
 
               {/* Full Week Schedule */}
               {selectedClass && !isLoading && timetableSlots && timetableSlots.length > 0 && (
-                <div className="bg-background rounded-xl border border-border overflow-hidden">
-                  {activeDays.map((dayOfWeek, idx) => {
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-foreground">Full Week Schedule</h3>
+                  
+                  {activeDays.map((dayOfWeek) => {
                     const daySlots = timetableSlots
                       .filter(s => s.day_of_week === dayOfWeek)
                       .sort((a, b) => a.start_time.localeCompare(b.start_time));
@@ -255,15 +257,29 @@ const Timetable = () => {
                     dayDate.setDate(dayDate.getDate() + (diff < 0 ? diff + 7 : diff));
 
                     return (
-                      <div key={dayOfWeek} className={idx > 0 ? "border-t border-border" : ""}>
+                      <div 
+                        key={dayOfWeek} 
+                        className={`bg-background rounded-xl border overflow-hidden ${
+                          isToday ? "border-primary/50 ring-1 ring-primary/20" : "border-border"
+                        }`}
+                      >
                         {/* Day Header */}
-                        <div className={`px-4 py-3 ${isToday ? "bg-primary/5" : "bg-muted/50"}`}>
+                        <div className={`px-4 py-3 border-b ${
+                          isToday 
+                            ? "bg-primary/10 border-primary/20" 
+                            : "bg-muted/50 border-border"
+                        }`}>
                           <span className={`font-semibold ${isToday ? "text-primary" : "text-foreground"}`}>
                             {DAY_NAMES[dayOfWeek]}
                           </span>
-                          <span className="text-muted-foreground ml-1">
+                          <span className="text-muted-foreground ml-2 text-sm">
                             {dayDate.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
                           </span>
+                          {isToday && (
+                            <span className="ml-2 text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
+                              Today
+                            </span>
+                          )}
                         </div>
 
                         {/* Day Slots */}
