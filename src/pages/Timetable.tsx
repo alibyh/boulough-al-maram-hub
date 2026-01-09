@@ -314,66 +314,65 @@ const Timetable = () => {
                   <CardTitle className="font-heading">Full Week Schedule</CardTitle>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto -mx-6 px-6">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="hover:bg-transparent">
-                        <TableHead className="w-[100px] font-semibold">Time</TableHead>
-                        {activeDays.map(day => (
-                          <TableHead 
-                            key={day} 
-                            className={`text-center font-semibold min-w-[120px] ${
-                              day === todayDayOfWeek ? "text-primary" : ""
-                            }`}
-                          >
-                            {DAY_NAMES[day]}
-                            {day === todayDayOfWeek && (
-                              <span className="block text-xs font-normal text-primary">Today</span>
-                            )}
-                          </TableHead>
+              <CardContent className="p-0">
+                {activeDays.map(dayOfWeek => {
+                  const daySlots = timetableSlots
+                    .filter(s => s.day_of_week === dayOfWeek)
+                    .sort((a, b) => a.start_time.localeCompare(b.start_time));
+                  
+                  const isToday = dayOfWeek === todayDayOfWeek;
+                  
+                  // Calculate the actual date for this day of week
+                  const dayDate = new Date();
+                  const diff = dayOfWeek - todayDayOfWeek;
+                  dayDate.setDate(dayDate.getDate() + (diff < 0 ? diff + 7 : diff));
+
+                  return (
+                    <div key={dayOfWeek} className="border-t first:border-t-0 border-border/50">
+                      {/* Day Header */}
+                      <div className={`px-6 py-4 ${isToday ? "bg-primary/5" : "bg-muted/30"}`}>
+                        <h3 className="text-lg font-semibold">
+                          <span className={isToday ? "text-primary" : "text-foreground"}>
+                            {DAY_NAMES[dayOfWeek]}
+                          </span>
+                          <span className="text-muted-foreground font-normal ml-1">
+                            {dayDate.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
+                          </span>
+                          {isToday && (
+                            <span className="ml-2 text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                              Today
+                            </span>
+                          )}
+                        </h3>
+                      </div>
+
+                      {/* Day Slots */}
+                      <div className="divide-y divide-border/30">
+                        {daySlots.map(slot => (
+                          <div key={slot.id} className="px-6 py-4 hover:bg-muted/20 transition-colors">
+                            {/* Subject Name */}
+                            <h4 className="font-medium text-foreground mb-2">
+                              {slot.subjects?.name || "Unknown Subject"}
+                            </h4>
+                            
+                            {/* Time & Details Row */}
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                              <span className="text-muted-foreground">
+                                {formatTime(slot.start_time)}– {formatTime(slot.end_time)}
+                              </span>
+                              
+                              {slot.classroom && (
+                                <span className="text-muted-foreground">
+                                  {slot.classroom}
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         ))}
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {weeklySchedule.timeSlots.map(({ start, end, key }) => (
-                        <TableRow key={key} className="hover:bg-muted/30">
-                          <TableCell className="font-medium text-sm whitespace-nowrap">
-                            {formatTime(start)}
-                            <span className="text-muted-foreground"> - </span>
-                            {formatTime(end)}
-                          </TableCell>
-                          {activeDays.map(day => {
-                            const slot = weeklySchedule.grid[key]?.[day];
-                            return (
-                              <TableCell 
-                                key={day} 
-                                className={`text-center p-2 ${
-                                  day === todayDayOfWeek ? "bg-primary/5" : ""
-                                }`}
-                              >
-                                {slot ? (
-                                  <div className="p-2 rounded-md bg-accent/50 border border-border/30">
-                                    <div className="font-medium text-sm text-foreground">
-                                      {slot.subjects?.name}
-                                    </div>
-                                    {slot.classroom && (
-                                      <div className="text-xs text-muted-foreground mt-0.5">
-                                        {slot.classroom}
-                                      </div>
-                                    )}
-                                  </div>
-                                ) : (
-                                  <span className="text-muted-foreground/40">—</span>
-                                )}
-                              </TableCell>
-                            );
-                          })}
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </CardContent>
             </Card>
           )}
