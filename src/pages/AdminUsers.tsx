@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,34 +27,29 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
   GraduationCap,
   Users,
   LogOut,
   Loader2,
   ArrowLeft,
   Pencil,
-  Trash2,
   Search,
   UserCircle,
   School,
   BookOpen,
+  Plus,
+  Upload,
+  X,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUsers, useUpdateProfile, useUpdateUserRole, UserWithRole } from "@/hooks/useUsers";
 import { useClasses } from "@/hooks/useClasses";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useQueryClient } from "@tanstack/react-query";
 
 type RoleFilter = "all" | "student" | "teacher" | "admin";
 
@@ -65,12 +60,25 @@ const AdminUsers = () => {
   const updateProfile = useUpdateProfile();
   const updateRole = useUpdateUserRole();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [editingUser, setEditingUser] = useState<UserWithRole | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+
+  // Create form state
+  const [createForm, setCreateForm] = useState({
+    full_name: "",
+    identifier: "",
+    role: "student" as "student" | "teacher",
+    class_id: "",
+  });
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Edit form state
   const [editForm, setEditForm] = useState({
@@ -97,6 +105,98 @@ const AdminUsers = () => {
     }
   }, [editingUser]);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAvatarFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const clearAvatar = () => {
+    setAvatarFile(null);
+    setAvatarPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const resetCreateForm = () => {
+    setCreateForm({
+      full_name: "",
+      identifier: "",
+      role: "student",
+      class_id: "",
+    });
+    clearAvatar();
+  };
+
+  const handleCreateUser = async () => {
+    if (!createForm.full_name.trim() || !createForm.identifier.trim()) {
+      toast.error("Please fill in name and ID");
+      return;
+    }
+
+    setIsCreating(true);
+
+    try {
+      let avatarUrl: string | null = null;
+
+      // Upload avatar if provided
+      if (avatarFile) {
+        const fileExt = avatarFile.name.split(".").pop();
+        const fileName = `${createForm.identifier.replace(/\s+/g, "_")}_${Date.now()}.${fileExt}`;
+
+        const { error: uploadError, data: uploadData } = await supabase.storage
+          .from("avatars")
+          .upload(fileName, avatarFile);
+
+        if (uploadError) {
+          console.error("Upload error:", uploadError);
+          toast.error("Failed to upload avatar");
+        } else {
+          const { data: urlData } = supabase.storage
+            .from("avatars")
+            .getPublicUrl(fileName);
+          avatarUrl = urlData.publicUrl;
+        }
+      }
+
+      // Call edge function to create user
+      const { data, error } = await supabase.functions.invoke("create-user", {
+        body: {
+          full_name: createForm.full_name,
+          identifier: createForm.identifier,
+          role: createForm.role,
+          class_id: createForm.class_id || null,
+          avatar_url: avatarUrl,
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      toast.success("User created successfully");
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+      setIsCreateDialogOpen(false);
+      resetCreateForm();
+    } catch (error) {
+      console.error("Error creating user:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to create user");
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
   const handleEditUser = (userItem: UserWithRole) => {
     setEditingUser(userItem);
     setIsEditDialogOpen(true);
@@ -106,7 +206,6 @@ const AdminUsers = () => {
     if (!editingUser) return;
 
     try {
-      // Update profile
       await updateProfile.mutateAsync({
         userId: editingUser.user_id,
         data: {
@@ -116,7 +215,6 @@ const AdminUsers = () => {
         },
       });
 
-      // Update role if changed
       const currentRole = editingUser.user_roles?.[0]?.role;
       if (editForm.role && editForm.role !== currentRole) {
         await updateRole.mutateAsync({
@@ -147,14 +245,21 @@ const AdminUsers = () => {
     }
   };
 
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   const filteredUsers = users?.filter((u) => {
-    // Role filter
     if (roleFilter !== "all") {
       const hasRole = u.user_roles?.some((r) => r.role === roleFilter);
       if (!hasRole) return false;
     }
 
-    // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       const matchesName = u.full_name?.toLowerCase().includes(query);
@@ -285,7 +390,7 @@ const AdminUsers = () => {
           </Card>
         </div>
 
-        {/* Filters */}
+        {/* Filters & Actions */}
         <Card className="mb-6 border-border/50">
           <CardContent className="p-4">
             <div className="flex flex-col sm:flex-row gap-4">
@@ -310,6 +415,10 @@ const AdminUsers = () => {
                   <TabsTrigger value="admin">Admins</TabsTrigger>
                 </TabsList>
               </Tabs>
+              <Button variant="gold" onClick={() => setIsCreateDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add User
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -335,8 +444,8 @@ const AdminUsers = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
+                      <TableHead>User</TableHead>
+                      <TableHead>ID</TableHead>
                       <TableHead>Role</TableHead>
                       <TableHead>Class</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
@@ -345,11 +454,24 @@ const AdminUsers = () => {
                   <TableBody>
                     {filteredUsers?.map((userItem) => (
                       <TableRow key={userItem.id}>
-                        <TableCell className="font-medium">
-                          {userItem.full_name}
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={userItem.avatar_url || undefined} />
+                              <AvatarFallback className="text-xs">
+                                {getInitials(userItem.full_name || "?")}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <div className="font-medium">{userItem.full_name}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {userItem.email}
+                              </div>
+                            </div>
+                          </div>
                         </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {userItem.email}
+                        <TableCell className="text-muted-foreground font-mono text-sm">
+                          {(userItem as UserWithRole & { identifier?: string }).identifier || "-"}
                         </TableCell>
                         <TableCell>
                           {userItem.user_roles?.map((r) => (
@@ -362,19 +484,15 @@ const AdminUsers = () => {
                             </Badge>
                           ))}
                         </TableCell>
-                        <TableCell>
-                          {userItem.classes?.name || "-"}
-                        </TableCell>
+                        <TableCell>{userItem.classes?.name || "-"}</TableCell>
                         <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleEditUser(userItem)}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEditUser(userItem)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -385,6 +503,140 @@ const AdminUsers = () => {
           </CardContent>
         </Card>
       </main>
+
+      {/* Create User Dialog */}
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add New User</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            {/* Avatar Upload */}
+            <div className="flex flex-col items-center gap-3">
+              <div className="relative">
+                <Avatar className="h-24 w-24">
+                  <AvatarImage src={avatarPreview || undefined} />
+                  <AvatarFallback className="text-2xl bg-muted">
+                    {createForm.full_name ? getInitials(createForm.full_name) : <UserCircle className="h-12 w-12" />}
+                  </AvatarFallback>
+                </Avatar>
+                {avatarPreview && (
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                    onClick={clearAvatar}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Upload Photo
+              </Button>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="create_full_name">Full Name *</Label>
+              <Input
+                id="create_full_name"
+                value={createForm.full_name}
+                onChange={(e) =>
+                  setCreateForm({ ...createForm, full_name: e.target.value })
+                }
+                placeholder="e.g., Ahmed Mohamed"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="create_identifier">Student/Teacher ID *</Label>
+              <Input
+                id="create_identifier"
+                value={createForm.identifier}
+                onChange={(e) =>
+                  setCreateForm({ ...createForm, identifier: e.target.value })
+                }
+                placeholder="e.g., STU001 or TCH001"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="create_role">Role *</Label>
+              <Select
+                value={createForm.role}
+                onValueChange={(value) =>
+                  setCreateForm({
+                    ...createForm,
+                    role: value as "student" | "teacher",
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="student">Student</SelectItem>
+                  <SelectItem value="teacher">Teacher</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {createForm.role === "student" && (
+              <div className="space-y-2">
+                <Label htmlFor="create_class">Class</Label>
+                <Select
+                  value={createForm.class_id || "none"}
+                  onValueChange={(value) =>
+                    setCreateForm({
+                      ...createForm,
+                      class_id: value === "none" ? "" : value,
+                    })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select class" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">No class</SelectItem>
+                    {classes?.map((cls) => (
+                      <SelectItem key={cls.id} value={cls.id}>
+                        {cls.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsCreateDialogOpen(false);
+                resetCreateForm();
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleCreateUser} disabled={isCreating}>
+              {isCreating && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Create User
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
