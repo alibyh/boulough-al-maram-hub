@@ -203,7 +203,7 @@ const AdminDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="border-border/50 opacity-60">
+          <Card className="border-border/50 hover:border-gold/50 transition-colors">
             <CardHeader>
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent">
@@ -218,9 +218,11 @@ const AdminDashboard = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <Button variant="outline" className="w-full" disabled>
-                Coming Soon
-              </Button>
+              <Link to="/admin/users">
+                <Button variant="outline" className="w-full">
+                  Manage Users
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </div>
