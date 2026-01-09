@@ -38,6 +38,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useClasses } from "@/hooks/useClasses";
 import { useSubjects } from "@/hooks/useSubjects";
+import { useTeachers } from "@/hooks/useTeachers";
 import {
   useTimetableByClass,
   useCreateTimetableSlot,
@@ -60,6 +61,7 @@ const AdminTimetable = () => {
   const navigate = useNavigate();
   const { data: classes, isLoading: classesLoading } = useClasses();
   const { data: subjects } = useSubjects();
+  const { data: teachers } = useTeachers();
 
   const [selectedClassId, setSelectedClassId] = useState<string>("");
   const { data: timetableSlots, isLoading: timetableLoading } =
@@ -79,6 +81,7 @@ const AdminTimetable = () => {
     start_time: "",
     end_time: "",
     classroom: "",
+    teacher_id: "",
   });
 
   useEffect(() => {
@@ -105,6 +108,7 @@ const AdminTimetable = () => {
         start_time: "",
         end_time: "",
         classroom: "",
+        teacher_id: "",
       });
     }
   }, [dialogOpen]);
@@ -128,6 +132,7 @@ const AdminTimetable = () => {
           start_time: "",
           end_time: "",
           classroom: editingSlot.classroom || "",
+          teacher_id: editingSlot.teacher_id || "",
         });
       } else {
         setUseCustomTime(true);
@@ -138,6 +143,7 @@ const AdminTimetable = () => {
           start_time: editingSlot.start_time.slice(0, 5),
           end_time: editingSlot.end_time.slice(0, 5),
           classroom: editingSlot.classroom || "",
+          teacher_id: editingSlot.teacher_id || "",
         });
       }
     }
@@ -184,6 +190,7 @@ const AdminTimetable = () => {
           start_time: startTime,
           end_time: endTime,
           classroom: formData.classroom || undefined,
+          teacher_id: formData.teacher_id || undefined,
         });
         toast.success("Time slot updated successfully");
       } else {
@@ -194,6 +201,7 @@ const AdminTimetable = () => {
           start_time: startTime,
           end_time: endTime,
           classroom: formData.classroom || undefined,
+          teacher_id: formData.teacher_id || undefined,
         });
         toast.success("Time slot added successfully");
       }
@@ -395,6 +403,26 @@ const AdminTimetable = () => {
                     </Button>
                   </div>
                   <div className="space-y-2">
+                    <Label>Teacher (optional)</Label>
+                    <Select
+                      value={formData.teacher_id}
+                      onValueChange={(v) =>
+                        setFormData({ ...formData, teacher_id: v })
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select teacher" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {teachers?.map((teacher) => (
+                          <SelectItem key={teacher.id} value={teacher.id}>
+                            {teacher.full_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
                     <Label>Classroom (optional)</Label>
                     <Input
                       placeholder="e.g., Room 101, Lab A"
@@ -444,6 +472,7 @@ const AdminTimetable = () => {
                           <TableRow>
                             <TableHead>Time</TableHead>
                             <TableHead>Subject</TableHead>
+                            <TableHead>Teacher</TableHead>
                             <TableHead>Classroom</TableHead>
                             <TableHead className="w-[100px]">Actions</TableHead>
                           </TableRow>
@@ -457,6 +486,9 @@ const AdminTimetable = () => {
                                   {slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)}
                                 </TableCell>
                                 <TableCell>{slot.subjects?.name}</TableCell>
+                                <TableCell className="text-muted-foreground">
+                                  {slot.profiles?.full_name || "—"}
+                                </TableCell>
                                 <TableCell className="text-muted-foreground">
                                   {slot.classroom || "—"}
                                 </TableCell>
