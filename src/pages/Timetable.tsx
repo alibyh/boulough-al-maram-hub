@@ -1,11 +1,11 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Clock, Loader2 } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Clock, Loader2, BookOpen } from "lucide-react";
 import { useClasses } from "@/hooks/useClasses";
-import { useTimetableByClass, DAY_NAMES } from "@/hooks/useTimetable";
+import { useTimetableByClass, DAY_NAMES, TimetableSlot } from "@/hooks/useTimetable";
 
 const Timetable = () => {
   const { t } = useTranslation();
@@ -13,7 +13,7 @@ const Timetable = () => {
   const [selectedClassId, setSelectedClassId] = useState<string>("");
 
   // Set first class as default when loaded
-  useMemo(() => {
+  useEffect(() => {
     if (classes?.length && !selectedClassId) {
       setSelectedClassId(classes[0].id);
     }
@@ -22,31 +22,40 @@ const Timetable = () => {
   const { data: timetableSlots, isLoading: timetableLoading } =
     useTimetableByClass(selectedClassId);
 
-  // Get unique time slots for the grid
-  const timeSlots = useMemo(() => {
-    if (!timetableSlots?.length) return [];
-    const times = new Set<string>();
-    timetableSlots.forEach((slot) => {
-      times.add(`${slot.start_time.slice(0, 5)} - ${slot.end_time.slice(0, 5)}`);
-    });
-    return Array.from(times).sort();
-  }, [timetableSlots]);
-
-  // Create a lookup for slots by day and time
-  const slotLookup = useMemo(() => {
+  // Group slots by day, only include days that have classes
+  const slotsByDay = useMemo(() => {
     if (!timetableSlots?.length) return {};
-    const lookup: Record<string, string> = {};
+    
+    const grouped: Record<number, TimetableSlot[]> = {};
+    
     timetableSlots.forEach((slot) => {
-      const key = `${slot.day_of_week}-${slot.start_time.slice(0, 5)} - ${slot.end_time.slice(0, 5)}`;
-      lookup[key] = slot.subjects?.name || "";
+      if (!grouped[slot.day_of_week]) {
+        grouped[slot.day_of_week] = [];
+      }
+      grouped[slot.day_of_week].push(slot);
     });
-    return lookup;
+
+    // Sort slots within each day by start_time
+    Object.keys(grouped).forEach((day) => {
+      grouped[Number(day)].sort((a, b) => 
+        a.start_time.localeCompare(b.start_time)
+      );
+    });
+
+    return grouped;
   }, [timetableSlots]);
 
-  // Days to show (Sunday to Thursday for schools)
-  const daysToShow = [0, 1, 2, 3, 4]; // Sunday to Thursday
+  // Get days that have classes, sorted
+  const daysWithClasses = useMemo(() => {
+    return Object.keys(slotsByDay)
+      .map(Number)
+      .sort((a, b) => a - b);
+  }, [slotsByDay]);
 
+  const selectedClass = classes?.find((c) => c.id === selectedClassId);
   const isLoading = classesLoading || timetableLoading;
+
+  const formatTime = (time: string) => time.slice(0, 5);
 
   return (
     <Layout>
@@ -69,9 +78,10 @@ const Timetable = () => {
 
       {/* Timetable */}
       <section className="py-16">
-        <div className="container">
-          <Card className="border-border/50 shadow-elegant">
-            <CardHeader>
+        <div className="container max-w-3xl">
+          {/* Class Selector */}
+          <Card className="border-border/50 shadow-elegant mb-8">
+            <CardHeader className="pb-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent">
                   <Clock className="h-5 w-5 text-primary" />
@@ -83,11 +93,11 @@ const Timetable = () => {
             </CardHeader>
             <CardContent>
               {classesLoading ? (
-                <div className="flex justify-center py-8">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <div className="flex justify-center py-4">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
               ) : !classes?.length ? (
-                <p className="text-center text-muted-foreground py-8">
+                <p className="text-center text-muted-foreground py-4">
                   No classes available yet.
                 </p>
               ) : (
@@ -96,68 +106,81 @@ const Timetable = () => {
                   onValueChange={setSelectedClassId}
                   className="w-full"
                 >
-                  <TabsList className="mb-6 flex-wrap h-auto">
+                  <TabsList className="flex-wrap h-auto w-full justify-start">
                     {classes.map((cls) => (
                       <TabsTrigger key={cls.id} value={cls.id}>
                         {cls.name}
                       </TabsTrigger>
                     ))}
                   </TabsList>
-
-                  {classes.map((cls) => (
-                    <TabsContent key={cls.id} value={cls.id}>
-                      {timetableLoading ? (
-                        <div className="flex justify-center py-8">
-                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                        </div>
-                      ) : !timeSlots.length ? (
-                        <p className="text-center text-muted-foreground py-8">
-                          No timetable configured for this class yet.
-                        </p>
-                      ) : (
-                        <div className="overflow-x-auto">
-                          <table className="w-full text-sm">
-                            <thead>
-                              <tr className="border-b border-border">
-                                <th className="px-4 py-3 text-left font-semibold text-foreground">
-                                  {t("timetablePage.time")}
-                                </th>
-                                {daysToShow.map((day) => (
-                                  <th
-                                    key={day}
-                                    className="px-4 py-3 text-left font-semibold text-foreground"
-                                  >
-                                    {t(`timetablePage.${DAY_NAMES[day].toLowerCase()}`)}
-                                  </th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {timeSlots.map((time, i) => (
-                                <tr
-                                  key={i}
-                                  className="border-b border-border/50"
-                                >
-                                  <td className="px-4 py-3 font-medium text-muted-foreground whitespace-nowrap">
-                                    {time}
-                                  </td>
-                                  {daysToShow.map((day) => (
-                                    <td key={day} className="px-4 py-3">
-                                      {slotLookup[`${day}-${time}`] || "-"}
-                                    </td>
-                                  ))}
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      )}
-                    </TabsContent>
-                  ))}
                 </Tabs>
               )}
             </CardContent>
           </Card>
+
+          {/* Selected Class Info */}
+          {selectedClass && (
+            <div className="mb-6 p-4 bg-muted/50 rounded-lg border border-border/50">
+              <h2 className="font-heading text-xl font-bold text-foreground">
+                {selectedClass.name}
+              </h2>
+            </div>
+          )}
+
+          {/* Schedule by Day */}
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : !daysWithClasses.length ? (
+            <Card className="border-border/50">
+              <CardContent className="py-12 text-center text-muted-foreground">
+                No timetable configured for this class yet.
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-6">
+              {daysWithClasses.map((day) => (
+                <div key={day} className="space-y-3">
+                  {/* Day Header */}
+                  <h3 className="font-heading text-lg font-bold text-foreground border-b border-border pb-2">
+                    {t(`timetablePage.${DAY_NAMES[day].toLowerCase()}`)}
+                  </h3>
+
+                  {/* Slots for this day */}
+                  <div className="space-y-3">
+                    {slotsByDay[day].map((slot) => (
+                      <Card 
+                        key={slot.id} 
+                        className="border-border/50 hover:shadow-md transition-shadow"
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-4">
+                            {/* Time Badge */}
+                            <div className="flex-shrink-0 min-w-[100px]">
+                              <div className="text-sm font-medium text-muted-foreground">
+                                {formatTime(slot.start_time)} – {formatTime(slot.end_time)}
+                              </div>
+                            </div>
+
+                            {/* Subject Info */}
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <BookOpen className="h-4 w-4 text-primary" />
+                                <h4 className="font-semibold text-foreground">
+                                  {slot.subjects?.name || "Unknown Subject"}
+                                </h4>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </Layout>
