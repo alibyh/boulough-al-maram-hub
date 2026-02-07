@@ -5,11 +5,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, ArrowRight, ImageIcon } from "lucide-react";
 import { useNewsList } from "@/hooks/useNews";
 import { format } from "date-fns";
+import { enUS } from "date-fns/locale/en-US";
+import { ar } from "date-fns/locale/ar";
+import { fr } from "date-fns/locale/fr";
 import { Skeleton } from "@/components/ui/skeleton";
 
+const dateLocales: Record<string, typeof enUS> = { en: enUS, ar, fr };
+
 const NewsSection = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { data: news, isLoading, error } = useNewsList();
+  const langCode = i18n.language.split("-")[0];
+  const dateLocale = dateLocales[langCode] ?? enUS;
   
   // Only show the 3 most recent news items
   const displayNews = news?.slice(0, 3) || [];
@@ -97,7 +104,7 @@ const NewsSection = () => {
                     </p>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Calendar className="h-4 w-4" />
-                      {format(new Date(item.date), "MMMM d, yyyy")}
+                      {format(new Date(item.date), "MMMM d, yyyy", { locale: dateLocale })}
                     </div>
                   </CardContent>
                 </Card>

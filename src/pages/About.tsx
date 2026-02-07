@@ -1,8 +1,11 @@
 import Layout from "@/components/layout/Layout";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Target, Eye, Heart, Award, Users, BookOpen } from "lucide-react";
 
 const About = () => {
+  const { t } = useTranslation();
+
   return (
     <Layout>
       {/* Header */}
@@ -10,14 +13,13 @@ const About = () => {
         <div className="container">
           <div className="max-w-2xl animate-fade-in">
             <span className="text-sm font-semibold text-gold uppercase tracking-wider">
-              About Us
+              {t("aboutPage.title")}
             </span>
             <h1 className="font-heading text-4xl md:text-5xl font-bold text-primary-foreground mt-2 mb-4">
-              Our Story
+              {t("aboutPage.subtitle")}
             </h1>
             <p className="text-lg text-primary-foreground/80">
-              Discover the journey, mission, and values that make Boulough Al-Maram
-              a leading institution in education.
+              {t("aboutPage.headerDescription")}
             </p>
           </div>
         </div>
@@ -29,38 +31,23 @@ const About = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="animate-fade-in">
               <span className="text-sm font-semibold text-gold uppercase tracking-wider">
-                Our Heritage
+                {t("aboutPage.heritage")}
               </span>
               <h2 className="font-heading text-3xl md:text-4xl font-bold text-foreground mt-2 mb-6">
-                30+ Years of Educational Excellence
+                {t("aboutPage.heritageTitle")}
               </h2>
               <div className="space-y-4 text-muted-foreground">
-                <p>
-                  Founded in 1995, Boulough Al-Maram High School has been a beacon
-                  of academic excellence and moral education. Our school was
-                  established with a vision to provide quality education that
-                  combines modern learning with traditional values.
-                </p>
-                <p>
-                  Over the years, we have grown from a small institution with just
-                  a few classrooms to a comprehensive educational facility serving
-                  over 1,200 students. Our alumni have gone on to excel in various
-                  fields, from medicine and engineering to arts and business.
-                </p>
-                <p>
-                  Today, we continue to evolve and adapt to the changing
-                  educational landscape while staying true to our core mission of
-                  developing well-rounded individuals who contribute positively to
-                  society.
-                </p>
+                <p>{t("aboutPage.historyPara1")}</p>
+                <p>{t("aboutPage.historyPara2")}</p>
+                <p>{t("aboutPage.historyPara3")}</p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4 animate-fade-in animation-delay-200">
               {[
-                { value: "1995", label: "Year Founded" },
-                { value: "1,200+", label: "Students" },
-                { value: "80+", label: "Faculty Members" },
-                { value: "95%", label: "University Placement" },
+                { value: "1995", label: t("aboutPage.stats.yearFounded") },
+                { value: "1,200+", label: t("aboutPage.stats.students") },
+                { value: "80+", label: t("aboutPage.stats.facultyMembers") },
+                { value: "95%", label: t("aboutPage.stats.universityPlacement") },
               ].map((stat, i) => (
                 <Card key={i} className="border-border/50 hover:border-gold/50 transition-colors">
                   <CardContent className="p-6 text-center">
@@ -83,21 +70,18 @@ const About = () => {
             {[
               {
                 icon: Target,
-                title: "Our Mission",
-                content:
-                  "To provide a comprehensive education that nurtures intellectual growth, moral character, and social responsibility, preparing students to become leaders and positive contributors to society.",
+                titleKey: "aboutPage.missionTitle",
+                contentKey: "aboutPage.missionContent",
               },
               {
                 icon: Eye,
-                title: "Our Vision",
-                content:
-                  "To be a leading educational institution recognized for academic excellence, innovative teaching methods, and the development of well-rounded individuals who embody knowledge, ethics, and leadership.",
+                titleKey: "aboutPage.visionTitle",
+                contentKey: "aboutPage.visionContent",
               },
               {
                 icon: Heart,
-                title: "Our Values",
-                content:
-                  "Excellence in education, respect for all individuals, integrity in actions, commitment to community service, and continuous pursuit of knowledge and self-improvement.",
+                titleKey: "aboutPage.valuesTitle",
+                contentKey: "aboutPage.valuesContent",
               },
             ].map((item, i) => (
               <Card
@@ -110,10 +94,10 @@ const About = () => {
                     <item.icon className="h-7 w-7 text-primary" />
                   </div>
                   <h3 className="font-heading text-xl font-bold text-foreground mb-4">
-                    {item.title}
+                    {t(item.titleKey)}
                   </h3>
                   <p className="text-muted-foreground leading-relaxed">
-                    {item.content}
+                    {t(item.contentKey)}
                   </p>
                 </CardContent>
               </Card>
@@ -127,10 +111,10 @@ const About = () => {
         <div className="container">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <span className="text-sm font-semibold text-gold uppercase tracking-wider">
-              What We Offer
+              {t("aboutPage.whatWeOffer")}
             </span>
             <h2 className="font-heading text-3xl md:text-4xl font-bold text-foreground mt-2">
-              Programs & Facilities
+              {t("aboutPage.programsFacilities")}
             </h2>
           </div>
 
@@ -138,32 +122,32 @@ const About = () => {
             {[
               {
                 icon: BookOpen,
-                title: "Academic Programs",
-                items: [
-                  "Sciences (Physics, Chemistry, Biology)",
-                  "Mathematics & Statistics",
-                  "Languages (Arabic, English, French)",
-                  "Social Sciences & Humanities",
+                titleKey: "aboutPage.academicPrograms",
+                itemKeys: [
+                  "aboutPage.academicProgramsItem1",
+                  "aboutPage.academicProgramsItem2",
+                  "aboutPage.academicProgramsItem3",
+                  "aboutPage.academicProgramsItem4",
                 ],
               },
               {
                 icon: Award,
-                title: "Extracurricular",
-                items: [
-                  "Sports teams & competitions",
-                  "Art & music programs",
-                  "Debate & public speaking",
-                  "Community service clubs",
+                titleKey: "aboutPage.extracurricular",
+                itemKeys: [
+                  "aboutPage.extracurricularItem1",
+                  "aboutPage.extracurricularItem2",
+                  "aboutPage.extracurricularItem3",
+                  "aboutPage.extracurricularItem4",
                 ],
               },
               {
                 icon: Users,
-                title: "Support Services",
-                items: [
-                  "Academic counseling",
-                  "Career guidance",
-                  "Learning support center",
-                  "Parent engagement programs",
+                titleKey: "aboutPage.supportServices",
+                itemKeys: [
+                  "aboutPage.supportServicesItem1",
+                  "aboutPage.supportServicesItem2",
+                  "aboutPage.supportServicesItem3",
+                  "aboutPage.supportServicesItem4",
                 ],
               },
             ].map((section, i) => (
@@ -178,14 +162,14 @@ const About = () => {
                       <section.icon className="h-5 w-5 text-primary" />
                     </div>
                     <h3 className="font-heading text-lg font-bold text-foreground">
-                      {section.title}
+                      {t(section.titleKey)}
                     </h3>
                   </div>
                   <ul className="space-y-2">
-                    {section.items.map((item, j) => (
+                    {section.itemKeys.map((key, j) => (
                       <li key={j} className="flex items-center gap-2 text-sm text-muted-foreground">
                         <span className="w-1.5 h-1.5 rounded-full bg-gold" />
-                        {item}
+                        {t(key)}
                       </li>
                     ))}
                   </ul>

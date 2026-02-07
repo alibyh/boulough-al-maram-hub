@@ -20,7 +20,7 @@ const HeroSection = () => {
       <div className="absolute inset-0">
         <img
           src={heroImage}
-          alt="Boulough Al-Maram High School Campus"
+          alt={t("hero.imageAlt")}
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/80 to-primary/40" />
@@ -32,7 +32,7 @@ const HeroSection = () => {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gold/20 border border-gold/30 backdrop-blur-sm">
             <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
             <span className="text-sm font-medium text-primary-foreground">
-              Admissions Open for 2025-2026
+              {t("hero.badge")}
             </span>
           </div>
 

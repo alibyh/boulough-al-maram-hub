@@ -55,16 +55,16 @@ const Footer = () => {
               <li className="flex items-start gap-3 text-sm">
                 <MapPin className="h-4 w-4 mt-0.5 text-gold shrink-0" />
                 <span className="text-primary-foreground/80">
-                  123 Education Street, Knowledge City, KC 12345
+                  {t("footer.address")}
                 </span>
               </li>
               <li className="flex items-center gap-3 text-sm">
                 <Phone className="h-4 w-4 text-gold shrink-0" />
-                <span className="text-primary-foreground/80">+1 234 567 8900</span>
+                <span className="text-primary-foreground/80">{t("footer.phone")}</span>
               </li>
               <li className="flex items-center gap-3 text-sm">
                 <Mail className="h-4 w-4 text-gold shrink-0" />
-                <span className="text-primary-foreground/80">info@bouloughalmaram.edu</span>
+                <span className="text-primary-foreground/80">{t("footer.email")}</span>
               </li>
             </ul>
           </div>

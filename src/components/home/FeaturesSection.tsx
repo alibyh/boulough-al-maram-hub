@@ -27,16 +27,6 @@ const FeaturesSection = () => {
       title: t("features.modernFacilities.title"),
       description: t("features.modernFacilities.description"),
     },
-    {
-      icon: Microscope,
-      title: t("features.scienceResearch.title"),
-      description: t("features.scienceResearch.description"),
-    },
-    {
-      icon: Palette,
-      title: t("features.artsCulture.title"),
-      description: t("features.artsCulture.description"),
-    },
   ];
 
   return (

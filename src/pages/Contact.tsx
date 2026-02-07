@@ -1,4 +1,5 @@
 import Layout from "@/components/layout/Layout";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,6 +9,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 const Contact = () => {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: "",
@@ -19,8 +21,8 @@ const Contact = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     toast({
-      title: "Message Sent!",
-      description: "We'll get back to you as soon as possible.",
+      title: t("contactPage.messageSent"),
+      description: t("contactPage.toastDescription"),
     });
     setFormData({ name: "", email: "", subject: "", message: "" });
   };
@@ -32,14 +34,13 @@ const Contact = () => {
         <div className="container">
           <div className="max-w-2xl animate-fade-in">
             <span className="text-sm font-semibold text-gold uppercase tracking-wider">
-              Get in Touch
+              {t("contactPage.headerLabel")}
             </span>
             <h1 className="font-heading text-4xl md:text-5xl font-bold text-primary-foreground mt-2 mb-4">
-              Contact Us
+              {t("contactPage.title")}
             </h1>
             <p className="text-lg text-primary-foreground/80">
-              Have questions? We'd love to hear from you. Send us a message and
-              we'll respond as soon as possible.
+              {t("contactPage.description")}
             </p>
           </div>
         </div>
@@ -54,23 +55,23 @@ const Contact = () => {
               {[
                 {
                   icon: MapPin,
-                  title: "Address",
-                  content: "123 Education Street\nKnowledge City, KC 12345",
+                  titleKey: "contactPage.address",
+                  contentKey: "contactPage.addressContent",
                 },
                 {
                   icon: Phone,
-                  title: "Phone",
-                  content: "+1 234 567 8900\n+1 234 567 8901",
+                  titleKey: "contactPage.phone",
+                  contentKey: "contactPage.phoneContent",
                 },
                 {
                   icon: Mail,
-                  title: "Email",
-                  content: "info@bouloughalmaram.edu\nadmissions@bouloughalmaram.edu",
+                  titleKey: "contactPage.email",
+                  contentKey: "contactPage.emailContent",
                 },
                 {
                   icon: Clock,
-                  title: "Office Hours",
-                  content: "Mon - Fri: 7:30 AM - 4:00 PM\nSat: 8:00 AM - 12:00 PM",
+                  titleKey: "contactPage.officeHours",
+                  contentKey: "contactPage.officeHoursContent",
                 },
               ].map((item, i) => (
                 <Card key={i} className="border-border/50 hover:border-gold/50 transition-colors">
@@ -81,10 +82,10 @@ const Contact = () => {
                       </div>
                       <div>
                         <h3 className="font-heading font-semibold text-foreground mb-1">
-                          {item.title}
+                          {t(item.titleKey)}
                         </h3>
                         <p className="text-sm text-muted-foreground whitespace-pre-line">
-                          {item.content}
+                          {t(item.contentKey)}
                         </p>
                       </div>
                     </div>
@@ -97,16 +98,16 @@ const Contact = () => {
             <Card className="lg:col-span-2 border-border/50 shadow-elegant">
               <CardContent className="p-8">
                 <h2 className="font-heading text-2xl font-bold text-foreground mb-6">
-                  Send us a Message
+                  {t("contactPage.sendMessage")}
                 </h2>
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div className="grid md:grid-cols-2 gap-5">
                     <div>
                       <label className="text-sm font-medium text-foreground mb-2 block">
-                        Your Name
+                        {t("contactPage.formName")}
                       </label>
                       <Input
-                        placeholder="John Doe"
+                        placeholder={t("contactPage.namePlaceholder")}
                         value={formData.name}
                         onChange={(e) =>
                           setFormData({ ...formData, name: e.target.value })
@@ -116,11 +117,11 @@ const Contact = () => {
                     </div>
                     <div>
                       <label className="text-sm font-medium text-foreground mb-2 block">
-                        Email Address
+                        {t("contactPage.formEmail")}
                       </label>
                       <Input
                         type="email"
-                        placeholder="john@example.com"
+                        placeholder={t("contactPage.emailPlaceholder")}
                         value={formData.email}
                         onChange={(e) =>
                           setFormData({ ...formData, email: e.target.value })
@@ -131,10 +132,10 @@ const Contact = () => {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-foreground mb-2 block">
-                      Subject
+                      {t("contactPage.formSubject")}
                     </label>
                     <Input
-                      placeholder="How can we help you?"
+                      placeholder={t("contactPage.subjectPlaceholder")}
                       value={formData.subject}
                       onChange={(e) =>
                         setFormData({ ...formData, subject: e.target.value })
@@ -144,10 +145,10 @@ const Contact = () => {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-foreground mb-2 block">
-                      Message
+                      {t("contactPage.formMessage")}
                     </label>
                     <Textarea
-                      placeholder="Your message..."
+                      placeholder={t("contactPage.messagePlaceholder")}
                       rows={5}
                       value={formData.message}
                       onChange={(e) =>
@@ -157,7 +158,7 @@ const Contact = () => {
                     />
                   </div>
                   <Button type="submit" variant="gold" size="lg">
-                    Send Message
+                    {t("contactPage.formSubmit")}
                     <Send className="h-4 w-4" />
                   </Button>
                 </form>
@@ -170,7 +171,7 @@ const Contact = () => {
             <div className="text-center">
               <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
               <p className="text-muted-foreground">
-                Map will be displayed here
+                {t("contactPage.mapPlaceholder")}
               </p>
             </div>
           </div>

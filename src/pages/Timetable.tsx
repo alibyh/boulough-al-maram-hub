@@ -3,10 +3,13 @@ import { useTranslation } from "react-i18next";
 import Layout from "@/components/layout/Layout";
 import { Loader2, MapPin, User } from "lucide-react";
 import { useClasses } from "@/hooks/useClasses";
-import { useTimetableByClass, TimetableSlot, DAY_NAMES } from "@/hooks/useTimetable";
+import { useTimetableByClass, TimetableSlot } from "@/hooks/useTimetable";
+
+const DAY_KEYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"] as const;
 
 const Timetable = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const dateLocale = i18n.language.startsWith("ar") ? "ar" : i18n.language.startsWith("fr") ? "fr" : "en-US";
   const { data: classes, isLoading: classesLoading } = useClasses();
   const [selectedClassId, setSelectedClassId] = useState<string>("");
   const [selectedDay, setSelectedDay] = useState<"today" | "tomorrow">("today");
@@ -78,7 +81,8 @@ const Timetable = () => {
   const getDayLabel = (day: "today" | "tomorrow") => {
     const date = new Date();
     if (day === "tomorrow") date.setDate(date.getDate() + 1);
-    return date.toLocaleDateString("en-US", { weekday: "long" });
+    const dayIndex = date.getDay();
+    return t(`timetablePage.${DAY_KEYS[dayIndex]}`);
   };
 
   const selectedClass = classes?.find((c) => c.id === selectedClassId);
@@ -111,7 +115,7 @@ const Timetable = () => {
             </div>
           ) : !classes?.length ? (
             <div className="text-center text-muted-foreground py-12 bg-background rounded-xl">
-              No classes available yet.
+              {t("timetablePage.noClassesAvailable")}
             </div>
           ) : (
             <>
@@ -143,7 +147,7 @@ const Timetable = () => {
                           : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                       }`}
                     >
-                      <span className="text-base font-semibold">Today</span>
+                      <span className="text-base font-semibold">{t("timetablePage.today")}</span>
                       <span className="block text-sm text-muted-foreground mt-1">
                         {getDayLabel("today")}
                       </span>
@@ -159,7 +163,7 @@ const Timetable = () => {
                           : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                       }`}
                     >
-                      <span className="text-base font-semibold">Tomorrow</span>
+                      <span className="text-base font-semibold">{t("timetablePage.tomorrow")}</span>
                       <span className="block text-sm text-muted-foreground mt-1">
                         {getDayLabel("tomorrow")}
                       </span>
@@ -177,7 +181,7 @@ const Timetable = () => {
                       </div>
                     ) : !slotsForDay.length ? (
                       <div className="flex items-center justify-center h-[320px] text-muted-foreground">
-                        No classes scheduled
+                        {t("timetablePage.noClassesScheduled")}
                       </div>
                     ) : (
                       <div className="divide-y divide-border">
@@ -197,7 +201,7 @@ const Timetable = () => {
                                 <div className="flex-1 min-w-0 space-y-1">
                                   {/* Subject */}
                                   <h4 className="font-semibold text-foreground text-base">
-                                    {slot.subjects?.name || "Unknown Subject"}
+                                    {slot.subjects?.name || t("timetablePage.unknownSubject")}
                                   </h4>
                                   {/* Time - bigger */}
                                   <p className="text-lg font-medium text-foreground">
@@ -229,9 +233,9 @@ const Timetable = () => {
                                         : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
                                     }`}
                                   >
-                                    {isOngoing && `${status.minutes}m left`}
-                                    {status.type === "upcoming" && `in ${status.minutes}m`}
-                                    {isFinished && "Done"}
+                                    {isOngoing && t("timetablePage.minutesLeft", { minutes: status.minutes })}
+                                    {status.type === "upcoming" && t("timetablePage.inMinutes", { minutes: status.minutes })}
+                                    {isFinished && t("timetablePage.done")}
                                   </span>
                                 )}
                               </div>
@@ -247,7 +251,7 @@ const Timetable = () => {
               {/* Full Week Schedule */}
               {selectedClass && !isLoading && timetableSlots && timetableSlots.length > 0 && (
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-foreground">Full Week Schedule</h3>
+                  <h3 className="text-lg font-semibold text-foreground">{t("timetablePage.fullWeekSchedule")}</h3>
                   
                   {activeDays.map((dayOfWeek) => {
                     const daySlots = timetableSlots
@@ -275,14 +279,14 @@ const Timetable = () => {
                             : "bg-muted/50 border-border"
                         }`}>
                           <span className={`font-semibold ${isToday ? "text-primary" : "text-foreground"}`}>
-                            {DAY_NAMES[dayOfWeek]}
+                            {t(`timetablePage.${DAY_KEYS[dayOfWeek]}`)}
                           </span>
                           <span className="text-muted-foreground ml-2 text-sm">
-                            {dayDate.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
+                            {dayDate.toLocaleDateString(dateLocale, { month: "long", day: "numeric" })}
                           </span>
                           {isToday && (
                             <span className="ml-2 text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
-                              Today
+                              {t("timetablePage.today")}
                             </span>
                           )}
                         </div>
@@ -292,7 +296,7 @@ const Timetable = () => {
                           {daySlots.map(slot => (
                             <div key={slot.id} className="px-4 py-3">
                               <h4 className="font-medium text-foreground">
-                                {slot.subjects?.name || "Unknown Subject"}
+                                {slot.subjects?.name || t("timetablePage.unknownSubject")}
                               </h4>
                               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-sm text-muted-foreground">
                                 <span>
